@@ -9,6 +9,12 @@ const logger         = require('./utils/logger');
 
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://smartcanteen-pearl-svcs.vercel.app',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 const startServer = async () => {
   try {
     // 1. Connect to MongoDB
@@ -20,7 +26,13 @@ const startServer = async () => {
     // 3. Attach Socket.io to the HTTP server
     const io = new Server(server, {
       cors: {
-        origin:      process.env.CLIENT_URL || 'http://localhost:3000',
+        origin: (origin, callback) => {
+          if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'));
+          }
+        },
         methods:     ['GET', 'POST'],
         credentials: true,
       },
