@@ -2,6 +2,9 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
+// Landing
+import LandingPage from './pages/LandingPage';
+
 // Auth
 import Login    from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -27,6 +30,7 @@ import VendorReports        from './pages/vendor/VendorReports';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProfile   from './pages/admin/AdminProfile';
 
+
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" />;
@@ -34,7 +38,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-// Simple inline PayHere pages — no separate file needed
 const PaymentSuccessPage = () => (
   <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#f0fdf4',fontFamily:'DM Sans,sans-serif'}}>
     <div style={{background:'white',borderRadius:24,padding:40,textAlign:'center',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',maxWidth:400}}>
@@ -61,6 +64,15 @@ function AppRoutes() {
   const { user } = useAuth();
   return (
     <Routes>
+      {/* Landing — public */}
+      <Route path="/" element={
+        !user                 ? <LandingPage />                      :
+        user.role==='vendor'  ? <Navigate to="/vendor/dashboard"/>   :
+        user.role==='admin'   ? <Navigate to="/admin/dashboard"/>    :
+        user.role==='student' ? <Navigate to="/student/home"/>       :
+                                <LandingPage />
+      }/>
+
       {/* Auth */}
       <Route path="/login"    element={!user ? <Login />    : <Navigate to="/" />} />
       <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
@@ -83,7 +95,7 @@ function AppRoutes() {
       <Route path="/student/notifications"
         element={<ProtectedRoute allowedRoles={['student']}><NotificationsPage/></ProtectedRoute>}/>
 
-      {/* PayHere redirect URLs — public, no auth needed */}
+      {/* PayHere */}
       <Route path="/payment/success" element={<PaymentSuccessPage/>}/>
       <Route path="/payment/cancel"  element={<PaymentCancelPage/>}/>
 
@@ -101,14 +113,6 @@ function AppRoutes() {
       <Route path="/admin/profile"
         element={<ProtectedRoute allowedRoles={['admin']}><AdminProfile/></ProtectedRoute>}/>
 
-      {/* Default redirect by role */}
-      <Route path="/" element={
-        !user                 ? <Navigate to="/login"/> :
-        user.role==='vendor'  ? <Navigate to="/vendor/dashboard"/> :
-        user.role==='admin'   ? <Navigate to="/admin/dashboard"/> :
-        user.role==='student' ? <Navigate to="/student/home"/> :
-                                <Navigate to="/login"/>
-      }/>
       <Route path="*" element={<Navigate to="/"/>}/>
     </Routes>
   );
