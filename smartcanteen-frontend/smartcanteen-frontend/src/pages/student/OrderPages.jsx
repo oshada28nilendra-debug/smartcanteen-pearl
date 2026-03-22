@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getMyOrders, getOrderById } from '../../services/api';
-import { io } from 'socket.io-client';
 
 /* ══════════════════════════════
    NOTIFICATION HISTORY PAGE
-   Spec: "Store notifications in DB and allow viewing notification history"
 ══════════════════════════════ */
 export function NotificationsPage() {
   const navigate = useNavigate();
@@ -77,7 +75,6 @@ export function NotificationsPage() {
 
 /* ══════════════════════════════
    ORDER RECEIPT / INVOICE PAGE
-   Spec: "The system will provide a digital receipt or invoice after successful payment"
 ══════════════════════════════ */
 export function OrderReceiptPage() {
   const { id } = useParams();
@@ -129,8 +126,6 @@ export function OrderReceiptPage() {
 
       <div className="max-w-lg mx-auto px-6 py-8">
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-
-          {/* Receipt Header */}
           <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white text-center">
             <div className="text-4xl mb-2">🧾</div>
             <h2 style={{fontFamily:"'Syne',sans-serif"}} className="text-2xl font-black">PEARL.</h2>
@@ -143,7 +138,6 @@ export function OrderReceiptPage() {
           </div>
 
           <div className="p-6 space-y-5">
-            {/* Order Info */}
             <div className="space-y-2">
               {[
                 {label:'Order ID',      value:`#${order._id?.slice(-10).toUpperCase()}`},
@@ -161,7 +155,6 @@ export function OrderReceiptPage() {
 
             <div className="border-t border-dashed border-gray-200"/>
 
-            {/* Items */}
             <div>
               <h3 className="font-black text-gray-800 text-sm mb-3">Order Items</h3>
               <div className="space-y-2">
@@ -179,7 +172,6 @@ export function OrderReceiptPage() {
 
             <div className="border-t border-dashed border-gray-200"/>
 
-            {/* Total */}
             <div className="flex justify-between items-center">
               <span className="font-black text-gray-800 text-lg">Total</span>
               <span className="font-black text-green-600 text-2xl">LKR {order.totalAmount?.toFixed(2)}</span>
@@ -193,7 +185,6 @@ export function OrderReceiptPage() {
 
             <div className="border-t border-dashed border-gray-200"/>
 
-            {/* Footer */}
             <div className="text-center text-xs text-gray-400 space-y-1">
               <p>Thank you for ordering with PEARL!</p>
               <p>No refunds after food preparation has started.</p>
@@ -315,7 +306,6 @@ export function OrderTrackingPage() {
     finally { setLoading(false); }
   }, [id]);
 
-  // Poll every 10 seconds
   useEffect(() => {
     if (!id) return;
     fetchOrder();
@@ -323,7 +313,6 @@ export function OrderTrackingPage() {
     return () => clearInterval(poll);
   }, [id, fetchOrder]);
 
-  // Also listen to Socket.io from AuthContext
   useEffect(() => {
     if (!socket?.current) return;
     const s = socket.current;
@@ -387,7 +376,6 @@ export function OrderTrackingPage() {
           </div>
         </div>
 
-        {/* Timeline */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-6">
           <h3 style={{fontFamily:"'Syne',sans-serif"}} className="font-black text-gray-800 mb-4">Order Timeline</h3>
           {STATUS_ORDER.map((s,i) => {
@@ -418,7 +406,6 @@ export function OrderTrackingPage() {
           })}
         </div>
 
-        {/* Order Details */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-6">
           <h3 style={{fontFamily:"'Syne',sans-serif"}} className="font-black text-gray-800 mb-4">Order Details</h3>
           <div className="space-y-2 mb-4">

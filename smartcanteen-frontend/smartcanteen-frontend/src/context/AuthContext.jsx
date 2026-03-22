@@ -12,7 +12,6 @@ export const AuthProvider = ({ children }) => {
   const [unreadCount,   setUnreadCount]   = useState(0);
   const socketRef = useRef(null);
 
-  // ── Fetch user's notifications ──
   const fetchNotifications = useCallback(async () => {
     try {
       const res = await getNotifications();
@@ -21,79 +20,35 @@ export const AuthProvider = ({ children }) => {
     } catch {}
   }, []);
 
-  // ── Connect Socket.io with auto-reconnect ──
   const connectSocket = useCallback((currentUser) => {
     if (!currentUser) return;
     const token = localStorage.getItem('accessToken');
     if (!token) return;
-
-    // Disconnect existing socket
     if (socketRef.current) socketRef.current.disconnect();
-
     const socket = io(
       process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000',
-      {
-        auth: { token },
-        transports: ['websocket'],
-        reconnection:       true,
-        reconnectionDelay:  1000,
-        reconnectionAttempts: 10,
-      }
+      { auth: { token }, transports: ['websocket'], reconnection: true, reconnectionDelay: 1000, reconnectionAttempts: 10 }
     );
-
-    socket.on('connect', () => {
-      console.log('✅ Socket connected:', socket.id);
-    });
-
-    // Student: receive order status change notification
+    socket.on('connect', () => console.log('✅ Socket connected:', socket.id));
     socket.on('order:statusChanged', (data) => {
-      setNotifications(prev => [{
-        _id:       Date.now().toString(),
-        message:   data.message || `Order status updated to ${data.status}`,
-        isRead:    false,
-        createdAt: new Date().toISOString(),
-        meta:      { orderId: data.orderId, status: data.status },
-      }, ...prev]);
+      setNotifications(prev => [{ _id: Date.now().toString(), message: data.message || `Order status updated to ${data.status}`, isRead: false, createdAt: new Date().toISOString(), meta: { orderId: data.orderId, status: data.status } }, ...prev]);
       setUnreadCount(c => c + 1);
     });
-
-    // Vendor: receive new order notification
     socket.on('order:new', (data) => {
-      setNotifications(prev => [{
-        _id:       Date.now().toString(),
-        message:   `🛒 New order received for ${data.pickupTime} — LKR ${data.totalAmount}`,
-        isRead:    false,
-        createdAt: new Date().toISOString(),
-        meta:      { orderId: data.orderId },
-      }, ...prev]);
+      setNotifications(prev => [{ _id: Date.now().toString(), message: `🛒 New order received for ${data.pickupTime} — LKR ${data.totalAmount}`, isRead: false, createdAt: new Date().toISOString(), meta: { orderId: data.orderId } }, ...prev]);
       setUnreadCount(c => c + 1);
     });
-
-    // Vendor: approval status changed
     socket.on('vendor:statusChanged', (data) => {
-      setNotifications(prev => [{
-        _id:       Date.now().toString(),
-        message:   data.message,
-        isRead:    false,
-        createdAt: new Date().toISOString(),
-      }, ...prev]);
+      setNotifications(prev => [{ _id: Date.now().toString(), message: data.message, isRead: false, createdAt: new Date().toISOString() }, ...prev]);
       setUnreadCount(c => c + 1);
-      // Refresh user to get updated vendorStatus
       getMe().then(res => setUser(res.data.data.user)).catch(() => {});
     });
-
-    socket.on('disconnect', (reason) => {
-      console.log('Socket disconnected:', reason);
-    });
-
-    socket.on('connect_error', (err) => {
-      console.warn('Socket connect error:', err.message);
-    });
-
+    socket.on('disconnect', (reason) => console.log('Socket disconnected:', reason));
+    socket.on('connect_error', (err) => console.warn('Socket connect error:', err.message));
     socketRef.current = socket;
   }, []);
 
-  // ── Check if already logged in on app start ──
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -121,7 +76,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('refreshToken', refreshToken);
     setUser(user);
     connectSocket(user);
-    // Fetch notifications after login
     setTimeout(fetchNotifications, 500);
     return user;
   };
@@ -141,7 +95,6 @@ export const AuthProvider = ({ children }) => {
     setUnreadCount(0);
   };
 
-  // ── Notification actions ──
   const markNotifRead = async (id) => {
     try {
       await markOneRead(id);
@@ -163,14 +116,7 @@ export const AuthProvider = ({ children }) => {
   const isStudent = () => user?.role === 'student';
 
   return (
-    <AuthContext.Provider value={{
-      user, loading,
-      login, register, logout,
-      isAdmin, isVendor, isStudent,
-      notifications, unreadCount,
-      fetchNotifications, markNotifRead, markAllNotifsRead,
-      socket: socketRef,
-    }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, isAdmin, isVendor, isStudent, notifications, unreadCount, fetchNotifications, markNotifRead, markAllNotifsRead, socket: socketRef }}>
       {!loading && children}
     </AuthContext.Provider>
   );

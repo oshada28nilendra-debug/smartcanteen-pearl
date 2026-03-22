@@ -29,7 +29,6 @@ export default function VendorDashboard() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileLoading,setProfileLoading]= useState(false);
 
-  // Profile state — loaded from DB on mount
   const [profile, setProfile] = useState({
     businessName:  '',
     email:         user?.email || '',
@@ -48,7 +47,7 @@ export default function VendorDashboard() {
   const unreadCount = notifications.filter(n => !n.isRead).length;
   const showToast = (msg, type='success') => { setToast({msg,type}); setTimeout(()=>setToast(''),3000); };
 
-  // ── Load real vendor profile from DB on mount ──
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const loadProfile = async () => {
       setProfileLoading(true);
@@ -68,7 +67,6 @@ export default function VendorDashboard() {
         }));
       } catch (err) {
         console.error('Failed to load vendor profile:', err);
-        // Fallback to user object from auth
         setProfile(p => ({
           ...p,
           businessName: user?.vendorProfile?.businessName || user?.name || '',
@@ -98,10 +96,12 @@ export default function VendorDashboard() {
     } catch {}
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchOrders(); fetchNotifications(); }, []);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { const t = setInterval(fetchOrders, 30000); return () => clearInterval(t); }, [fetchOrders]);
 
-  // Socket.io
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
@@ -113,7 +113,7 @@ export default function VendorDashboard() {
     socket.on('order:new', () => { fetchOrders(); fetchNotifications(); showToast('🛒 New order received!'); });
     socket.on('connect_error', err => console.warn('Socket:', err.message));
     return () => socket.disconnect();
-  }, [fetchOrders]);
+  }, [fetchOrders, fetchNotifications]);
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     setUpdating(orderId);
@@ -130,7 +130,6 @@ export default function VendorDashboard() {
     try { await markAllRead(); setNotifications(prev=>prev.map(n=>({...n,isRead:true}))); } catch {}
   };
 
-  // ── Save profile to DB — saves ALL fields including businessName ──
   const saveProfile = async () => {
     if (!profile.businessName.trim()) { showToast('Business name is required.', 'error'); return; }
     setProfileSaving(true);
@@ -197,7 +196,6 @@ export default function VendorDashboard() {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            {/* Notifications */}
             <div className="relative">
               <button onClick={()=>{setShowNotifs(!showNotifs);setShowProfile(false);}}
                 className="relative w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-green-50 rounded-xl transition-all">
@@ -230,7 +228,6 @@ export default function VendorDashboard() {
                 </div>
               )}
             </div>
-            {/* Profile button */}
             <button onClick={()=>{setShowProfile(!showProfile);setShowNotifs(false);}}
               className="flex items-center gap-2 bg-gray-100 hover:bg-green-50 rounded-xl px-3 py-2 transition-all">
               {profile.avatar
@@ -341,7 +338,7 @@ export default function VendorDashboard() {
         </div>
       </div>
 
-      {/* ── PROFILE MODAL ── */}
+      {/* PROFILE MODAL */}
       {showProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={()=>setShowProfile(false)}>
           <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"/>
@@ -364,8 +361,6 @@ export default function VendorDashboard() {
               <div className="p-8 text-center text-gray-400 text-sm animate-pulse">Loading profile...</div>
             ) : (
               <div className="overflow-y-auto flex-1 p-6 space-y-5">
-
-                {/* Business Info */}
                 <div>
                   <h3 className="text-sm font-black text-gray-800 mb-3 flex items-center gap-2">🏪 Business Information
                     <span className="text-xs font-normal text-gray-400">— shown to students</span>
@@ -404,7 +399,6 @@ export default function VendorDashboard() {
                   </div>
                 </div>
 
-                {/* Payment Details */}
                 <div>
                   <h3 className="text-sm font-black text-gray-800 mb-1 flex items-center gap-2">🏦 Payment Details</h3>
                   <p className="text-xs text-gray-400 mb-3">Your bank details for receiving payouts</p>
@@ -426,11 +420,9 @@ export default function VendorDashboard() {
                   </div>
                 </div>
 
-                {/* Banner tip */}
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700">
                   💡 To update your <strong>shop banner image</strong>, go to <strong>Menu → Shop Profile</strong>
                 </div>
-
               </div>
             )}
 

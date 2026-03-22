@@ -11,7 +11,9 @@ const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://smartcanteen-pearl-svcs.vercel.app',
+  'https://smartcanteen-pearl.vercel.app',
+  'https://www.pearll.lk',
+  'https://pearll.lk',
   process.env.CLIENT_URL,
 ].filter(Boolean);
 

@@ -27,7 +27,9 @@ app.use(helmet());
 /* ── CORS ── */
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://smartcanteen-pearl-svcs.vercel.app',
+  'https://smartcanteen-pearl.vercel.app',
+  'https://www.pearll.lk',
+  'https://pearll.lk',
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
@@ -44,7 +46,19 @@ app.use(cors({
   credentials:    true,
 }));
 
-app.options('*', cors());
+// Must be BEFORE routes — handles all OPTIONS preflight requests
+app.options('*', cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods:        ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials:    true,
+}));
 
 /* ── Body parsing ──
    FIX: increased limit from 10kb to 10mb to allow base64 image uploads

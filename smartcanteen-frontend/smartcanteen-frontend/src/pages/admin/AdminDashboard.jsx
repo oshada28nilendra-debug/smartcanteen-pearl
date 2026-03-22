@@ -152,7 +152,7 @@ body.pearl-dark{--bg:#0f1117;--sidebar-bg:#16191f;--card:#1e2128;--border:#2a2d3
 const initials = n => (n||'').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();   // ← removed unused `logout`
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -174,7 +174,6 @@ export default function AdminDashboard() {
   const [searchResults, setSearchResults] = useState([]);
   const [notifOpen,     setNotifOpen]     = useState(false);
 
-  // Real data state
   const [stats,    setStats]    = useState(null);
   const [activity, setActivity] = useState([]);
   const [vendors,  setVendors]  = useState([]);
@@ -183,7 +182,6 @@ export default function AdminDashboard() {
   const [notifs,   setNotifs]   = useState([]);
   const [loading,  setLoading]  = useState({ stats:true, vendors:true, users:true, activity:true, reports:true });
 
-  // Settings — saved to localStorage (no backend needed for this)
   const [settings, setSettings] = useState(() => {
     try { return JSON.parse(localStorage.getItem('pearl_admin_settings')) || defaultSettings(); } catch { return defaultSettings(); }
   });
@@ -200,14 +198,12 @@ export default function AdminDashboard() {
 
   useEffect(() => { document.body.classList.toggle('pearl-dark', dark); }, [dark]);
 
-  // Close notif on outside click
   useEffect(() => {
     const h = e => { if(notifRef.current&&!notifRef.current.contains(e.target)) setNotifOpen(false); };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  // ── Fetch all real data ──
   const fetchStats = useCallback(async () => {
     try { const r = await API.get('/admin/stats'); setStats(r.data.data); } catch {}
     finally { setLoading(p=>({...p,stats:false})); }
@@ -240,19 +236,23 @@ export default function AdminDashboard() {
     try { const r = await API.get('/admin/notifications'); setNotifs(r.data.data.notifications||[]); } catch {}
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchStats(); fetchActivity(); fetchNotifs();
-    // Auto-refresh stats every 30s
     const t = setInterval(() => { fetchStats(); fetchActivity(); fetchNotifs(); }, 30000);
     return () => clearInterval(t);
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if(page==='vendors') fetchVendors(); }, [page]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if(page==='users')   fetchUsers(); }, [page]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if(page==='dashboard') { fetchVendors(); fetchUsers(); } }, [page]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if(page==='reports')  fetchReports(); }, [page, revenueMode]);
 
-  // Charts
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if(page==='reports' && reports) setTimeout(()=>initCharts(), 100);
     else destroyCharts();
@@ -283,6 +283,7 @@ export default function AdminDashboard() {
   }
   function destroyCharts() { Object.values(chartInst.current).forEach(c=>c&&c.destroy()); chartInst.current={}; }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if(window.Chart) return;
     const s = document.createElement('script');
@@ -291,7 +292,6 @@ export default function AdminDashboard() {
     document.head.appendChild(s);
   }, []);
 
-  // Search
   useEffect(() => {
     if(!search.trim()) { setSearchResults([]); setSearchOpen(false); return; }
     const t = setTimeout(async () => {
@@ -310,7 +310,6 @@ export default function AdminDashboard() {
     setTimeout(()=>setToasts(p=>p.filter(t=>t.id!==id)),3500);
   }, []);
 
-  // Vendor actions
   const approveVendor = v => setModal({
     title:`Approve ${v.vendorProfile?.businessName||v.name}?`,
     body:'This will approve this vendor and allow them to receive orders.',
@@ -353,7 +352,6 @@ export default function AdminDashboard() {
     });
   };
 
-  // Settings save
   const saveSettings = () => {
     if(settings.openTime>=settings.closeTime){showToast('Closing time must be after opening time.','error');return;}
     localStorage.setItem('pearl_admin_settings', JSON.stringify(settings));
@@ -381,12 +379,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="pearl-shell">
-      {/* TOASTS */}
       <div className="pearl-toast-container">
         {toasts.map(t=><div key={t.id} className={`pearl-toast ${t.type}`}>{t.msg}</div>)}
       </div>
 
-      {/* MODAL */}
       {modal&&(
         <div className="pearl-modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setModal(null);}}>
           <div className="pearl-modal">
@@ -400,7 +396,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* SIDEBAR */}
       <aside className="pearl-sidebar">
         <div className="pearl-logo">PEARL<span>.</span></div>
         <nav className="pearl-nav">
@@ -419,13 +414,9 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* MAIN */}
       <main className="pearl-main">
-        {/* TOPBAR */}
         <div className="pearl-topbar">
           <div className="pearl-topbar-title">{PAGE_TITLES[page]||page}</div>
-
-          {/* Search */}
           <div className="pearl-search-wrap" ref={searchRef}>
             <svg className="pearl-search-icon" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input placeholder="Search orders, vendors, users..." value={search}
@@ -441,8 +432,6 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
-
-          {/* Notifications */}
           <div className="pearl-icon-btn" ref={notifRef} onClick={()=>setNotifOpen(p=>!p)} style={{position:'relative'}}>
             <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             {unreadNotifs > 0 && <span className="pearl-notif-badge"/>}
@@ -464,7 +453,6 @@ export default function AdminDashboard() {
                     </div>
                   ))
                 }
-                {/* Pending vendor alerts */}
                 {pendingVendors.length > 0 && (
                   <div className="pearl-notif-item" onClick={()=>{setPage('vendors');setVendorTab('pending');setNotifOpen(false);}}>
                     <span className="pearl-dot"/>
@@ -477,8 +465,6 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
-
-          {/* Dark mode */}
           <div className="pearl-icon-btn" onClick={()=>setDark(p=>!p)}>
             {dark
               ? <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
@@ -488,11 +474,8 @@ export default function AdminDashboard() {
         </div>
 
         <div className="pearl-content">
-
-          {/* ═══ DASHBOARD ═══ */}
           {page==='dashboard' && (
             <div className="pearl-page">
-              {/* Stats */}
               <div className="pearl-stats-grid">
                 {loading.stats ? (
                   [...Array(4)].map((_,i)=>(
@@ -514,9 +497,7 @@ export default function AdminDashboard() {
                   </div>
                 ))}
               </div>
-
               <div className="pearl-bottom-grid">
-                {/* Pending approvals */}
                 <div className="pearl-panel">
                   <div className="pearl-panel-header">
                     <span className="pearl-panel-title">Pending Vendor Approvals</span>
@@ -543,8 +524,6 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
-
-                {/* Recent Activity — REAL from DB */}
                 <div className="pearl-panel">
                   <div className="pearl-panel-header">
                     <span className="pearl-panel-title">Recent Activity</span>
@@ -566,7 +545,6 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ═══ VENDORS ═══ */}
           {page==='vendors' && (
             <div className="pearl-page">
               <div className="pearl-page-toolbar">
@@ -607,7 +585,6 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ═══ USERS ═══ */}
           {page==='users' && (
             <div className="pearl-page">
               <div className="pearl-page-toolbar">
@@ -645,7 +622,6 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ═══ REPORTS — REAL DATA ═══ */}
           {page==='reports' && (
             <div className="pearl-page">
               <div className="pearl-section-title" style={{marginBottom:20}}>Reports & Analytics</div>
@@ -667,7 +643,6 @@ export default function AdminDashboard() {
                       </div>
                     ))}
                   </div>
-
                   <div className="pearl-reports-charts-grid">
                     <div className="pearl-panel">
                       <div className="pearl-panel-header">
@@ -685,8 +660,6 @@ export default function AdminDashboard() {
                       <div className="pearl-chart-wrap" style={{maxWidth:260,margin:'0 auto'}}><canvas ref={el=>chartRefs.current.category=el}/></div>
                     </div>
                   </div>
-
-                  {/* Top Selling Items */}
                   <div className="pearl-panel">
                     <div className="pearl-panel-header"><span className="pearl-panel-title">🏆 Top Selling Items</span></div>
                     {reports.topItems.length === 0 ? (
@@ -716,7 +689,6 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ═══ SETTINGS ═══ */}
           {page==='settings' && (
             <div className="pearl-page">
               <div className="pearl-page-toolbar">
@@ -808,7 +780,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           )}
-
         </div>
       </main>
     </div>

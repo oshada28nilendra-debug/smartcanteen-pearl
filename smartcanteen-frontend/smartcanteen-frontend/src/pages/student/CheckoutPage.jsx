@@ -5,7 +5,7 @@ import { getAvailableSlots, createOrderIntent, initiatePayment } from '../../ser
 import API from '../../services/api';
 
 export default function CheckoutPage() {
-  const { user } = useAuth();
+  useAuth(); // user destructure removed - unused
   const navigate = useNavigate();
 
   const [cart,         setCart]         = useState([]);
@@ -22,6 +22,7 @@ export default function CheckoutPage() {
   const today      = new Date().toISOString().split('T')[0];
   const totalPrice = cart.reduce((s, c) => s + c.price * c.quantity, 0);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const savedCart   = localStorage.getItem('cart');
     const savedVendor = localStorage.getItem('checkoutVendorId');
@@ -51,7 +52,6 @@ export default function CheckoutPage() {
     setPayError('');
 
     try {
-      // Step 1: Create order intent
       const intentRes = await createOrderIntent({
         vendorId,
         pickupSlotId: selectedSlot,
@@ -60,7 +60,6 @@ export default function CheckoutPage() {
       const orderId = intentRes.data.data.orderId;
 
       if (payMethod === 'payhere') {
-        // Redirect to PayHere — payment confirmed via webhook
         const payRes = await initiatePayment(orderId);
         const { payhereParams, payhereUrl } = payRes.data.data;
         const form = document.createElement('form');
@@ -73,17 +72,10 @@ export default function CheckoutPage() {
         });
         document.body.appendChild(form);
         form.submit();
-
       } else {
-        // FIX: Card payment — call confirm-payment so order is marked PAID
-        // and vendor sees it immediately in their dashboard
         await API.post(`/orders/${orderId}/confirm-payment`);
-
-        // Clean up cart
         localStorage.removeItem('cart');
         localStorage.removeItem('checkoutVendorId');
-
-        // Navigate to success page
         navigate(`/student/order-success/${orderId}`);
       }
     } catch (err) {
@@ -114,7 +106,6 @@ export default function CheckoutPage() {
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
           <h1 style={{fontFamily:"'Syne',sans-serif"}} className="text-xl font-black text-gray-800">Checkout</h1>
-          {/* Steps */}
           <div className="ml-auto flex items-center gap-2">
             {[1,2,3].map(s => (
               <div key={s} className="flex items-center">
@@ -220,7 +211,6 @@ export default function CheckoutPage() {
           </div>
           {step===3 && (
             <div className="px-5 pb-5">
-              {/* Payment method selector */}
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <button onClick={() => setPayMethod('card')}
                   className={`p-4 rounded-2xl border-2 text-sm font-semibold transition-all flex flex-col items-center gap-2 ${
@@ -240,10 +230,8 @@ export default function CheckoutPage() {
                 </button>
               </div>
 
-              {/* Credit card form */}
               {payMethod==='card' && (
                 <div className="space-y-4 mb-6">
-                  {/* Card preview */}
                   <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl p-5 text-white">
                     <div className="flex items-center justify-between mb-6">
                       <div style={{fontFamily:"'Syne',sans-serif"}} className="font-black text-lg">PEARL.</div>
@@ -301,7 +289,6 @@ export default function CheckoutPage() {
                 <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 mb-4 text-sm">⚠️ {payError}</div>
               )}
 
-              {/* Order total recap */}
               <div className="bg-green-50 rounded-2xl p-4 mb-4">
                 <div className="flex justify-between text-sm text-gray-600 mb-1">
                   <span>Items ({cart.reduce((s,c)=>s+c.quantity,0)})</span>

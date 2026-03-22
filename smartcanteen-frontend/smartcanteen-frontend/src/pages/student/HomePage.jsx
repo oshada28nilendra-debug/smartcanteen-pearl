@@ -11,7 +11,6 @@ const BG_COLORS = [
 ];
 const FOOD_EMOJIS = ['🍛','🍔','🍜','🥗','🥤','🍢','🍕','🍣','🍝','☕'];
 
-// Category filters matching your menu categories
 const CATEGORY_FILTERS = [
   { label:'All',        emoji:'🍽️' },
   { label:'Rice',       emoji:'🍚' },
@@ -42,8 +41,7 @@ export default function HomePage() {
   const { user, logout, notifications, unreadCount, markAllNotifsRead, markNotifRead } = useAuth();
   const navigate = useNavigate();
 
-  const [vendors,      setVendors]      = useState([]);
-  const [allVendors,   setAllVendors]   = useState([]); // full list for filtering
+  const [allVendors,   setAllVendors]   = useState([]);
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState('');
   const [search,       setSearch]       = useState('');
@@ -51,20 +49,17 @@ export default function HomePage() {
   const [showProfile,  setShowProfile]  = useState(false);
   const [showNotifs,   setShowNotifs]   = useState(false);
   const [profile,      setProfile]      = useState({ name: user?.name || '', avatar: null });
-  const [profileSaved, setProfileSaved] = useState(false);
   const avatarRef = useRef();
   const notifRef  = useRef();
 
   const initials = (name='') => name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
 
-  // Close notif dropdown on outside click
   useEffect(() => {
     const h = e => { if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotifs(false); };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  // Fetch approved vendors
   useEffect(() => {
     const fetchVendors = async () => {
       setLoading(true);
@@ -76,8 +71,6 @@ export default function HomePage() {
           name:        v.vendorProfile?.businessName || v.name,
           description: v.vendorProfile?.description  || 'Fresh meals made daily',
           bannerImage: v.vendorProfile?.bannerImage   || null,
-          // Store categories this vendor serves (from their menu items if available)
-          // For now we use a default — this gets populated when vendor adds menu items
           category:    v.vendorProfile?.category || 'All',
           rating:      4.5,
           minOrder:    200,
@@ -85,7 +78,6 @@ export default function HomePage() {
           bgColor:     BG_COLORS[i % BG_COLORS.length],
         }));
         setAllVendors(mapped);
-        setVendors(mapped);
       } catch {
         setError('Could not load canteens. Please refresh.');
       } finally {
@@ -95,7 +87,6 @@ export default function HomePage() {
     fetchVendors();
   }, []);
 
-  // Filter vendors by search
   const filtered = allVendors.filter(v =>
     !search ||
     v.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -121,7 +112,6 @@ export default function HomePage() {
             <span style={{fontFamily:"'Syne',sans-serif"}} className="text-lg font-black text-gray-900">PEARL<span className="text-green-500">.</span></span>
           </div>
 
-          {/* Search */}
           <div className="flex-1 relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search canteens..."
@@ -130,14 +120,12 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Orders */}
             <button onClick={()=>navigate('/student/orders')}
               className="hidden md:flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-green-600 px-3 py-2 rounded-xl hover:bg-green-50 transition-all">
               <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
               Orders
             </button>
 
-            {/* Notification Bell */}
             <div className="relative" ref={notifRef}>
               <button onClick={()=>setShowNotifs(!showNotifs)}
                 className="relative w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-green-50 rounded-xl transition-all">
@@ -174,7 +162,6 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Profile */}
             <button onClick={()=>setShowProfile(true)}
               className="flex items-center gap-2 bg-gray-100 hover:bg-green-50 rounded-xl px-3 py-2 transition-all">
               {profile.avatar
@@ -197,7 +184,7 @@ export default function HomePage() {
 
       <div className="max-w-5xl mx-auto px-5 py-5">
 
-        {/* ── CATEGORY FILTER BAR (matches the screenshot design) ── */}
+        {/* CATEGORY FILTER BAR */}
         <div className="flex gap-2 overflow-x-auto pb-2 mb-5" style={{scrollbarWidth:'none'}}>
           {CATEGORY_FILTERS.map(cat => (
             <button key={cat.label} onClick={()=>setActiveFilter(cat.label)}
@@ -212,7 +199,6 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Header row */}
         <div className="flex items-center justify-between mb-4">
           <h2 style={{fontFamily:"'Syne',sans-serif"}} className="text-lg font-black text-gray-800">
             {search ? `Results for "${search}"` : activeFilter === 'All' ? 'Campus Canteens' : `${activeFilter} Canteens`}
@@ -227,7 +213,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Loading skeletons */}
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_,i) => (
@@ -243,7 +228,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Empty */}
         {!loading && !error && filtered.length === 0 && (
           <div className="text-center py-16">
             <div className="text-4xl mb-3">{search?'🔍':'🏪'}</div>
@@ -253,7 +237,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* VENDOR GRID */}
         {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map(vendor => (
