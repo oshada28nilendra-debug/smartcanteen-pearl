@@ -27,9 +27,9 @@ app.use(helmet());
 /* ── CORS ── */
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://smartcanteen-pearl.vercel.app',
-  'https://www.pearll.lk',
+  'https://smartcanteen-pearl-svcs.vercel.app',
   'https://pearll.lk',
+  'https://www.pearll.lk',
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
