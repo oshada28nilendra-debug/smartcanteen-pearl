@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 // ── Inline styles matching exact Tokko aesthetic ──────────────────────────────
 const G = {
@@ -55,7 +55,6 @@ const G = {
     background: "#f9f8f6",
   },
 
-  // Social proof pills floating around the title
   floatPill: {
     position: "absolute",
     background: "#fff",
@@ -108,7 +107,6 @@ const G = {
     cursor: "pointer",
   },
 
-  // Photo cards strip — exactly like Tokko
   photoStrip: {
     display: "flex",
     justifyContent: "center",
@@ -143,7 +141,7 @@ const G = {
   },
 };
 
-// ── Floating number pills (like "8600 👁", "1520 ❤️") ─────────────────────────
+// ── Floating number pills ─────────────────────────────────────────────────────
 function FloatPill({ icon, count, color, style }) {
   return (
     <div style={{ ...G.floatPill, ...style }}>
@@ -177,21 +175,22 @@ function PhotoCard({ emoji, label, bg, width, height, left, rotate, zIndex }) {
   );
 }
 
-// ── Review card (scattered like Tokko) ───────────────────────────────────────
+// ── Review card ───────────────────────────────────────────────────────────────
 function ReviewCard({ text, author, avatar, avatarBg, style, rotate }) {
   return (
-    <div style={{
-      position: "absolute",
-      background: "#fff",
-      borderRadius: 18,
-      padding: "22px 24px",
-      maxWidth: 280,
-      boxShadow: "0 8px 40px rgba(0,0,0,0.09)",
-      transform: `rotate(${rotate}deg)`,
-      transition: "transform 0.3s",
-      cursor: "default",
-      ...style,
-    }}
+    <div
+      style={{
+        position: "absolute",
+        background: "#fff",
+        borderRadius: 18,
+        padding: "22px 24px",
+        maxWidth: 280,
+        boxShadow: "0 8px 40px rgba(0,0,0,0.09)",
+        transform: `rotate(${rotate}deg)`,
+        transition: "transform 0.3s",
+        cursor: "default",
+        ...style,
+      }}
       onMouseEnter={e => e.currentTarget.style.transform = "rotate(0deg) scale(1.03)"}
       onMouseLeave={e => e.currentTarget.style.transform = `rotate(${rotate}deg)`}
     >
@@ -210,7 +209,7 @@ function ReviewCard({ text, author, avatar, avatarBg, style, rotate }) {
   );
 }
 
-// ── Feature tag pill ─────────────────────────────────────────────────────────
+// ── Feature tag pill ──────────────────────────────────────────────────────────
 function FeatureTag({ icon, label }) {
   return (
     <div style={{
@@ -246,13 +245,20 @@ function SectionTitle({ children, center }) {
 // ── Role card ─────────────────────────────────────────────────────────────────
 function RoleCard({ emoji, badge, badgeColor, badgeBg, title, desc, features }) {
   return (
-    <div style={{
-      border: "1.5px solid #e8e8e8", borderRadius: 24,
-      padding: "40px 32px", background: "#fff",
-      transition: "transform 0.3s, box-shadow 0.3s",
-    }}
-      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 20px 50px rgba(0,0,0,0.07)"; }}
-      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+    <div
+      style={{
+        border: "1.5px solid #e8e8e8", borderRadius: 24,
+        padding: "40px 32px", background: "#fff",
+        transition: "transform 0.3s, box-shadow 0.3s",
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = "translateY(-6px)";
+        e.currentTarget.style.boxShadow = "0 20px 50px rgba(0,0,0,0.07)";
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "none";
+      }}
     >
       <div style={{
         display: "inline-flex", alignItems: "center", gap: 6,
@@ -281,13 +287,6 @@ function RoleCard({ emoji, badge, badgeColor, badgeBg, title, desc, features }) 
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 export default function PearlHero() {
-  const [scrollY, setScrollY] = useState(0);
-  useEffect(() => {
-    const h = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", h);
-    return () => window.removeEventListener("scroll", h);
-  }, []);
-
   return (
     <div style={G.page}>
 
@@ -297,7 +296,9 @@ export default function PearlHero() {
           <div style={G.navLogo}>👁️</div>
           <ul style={G.navLinks}>
             {["Features", "How it Works", "For You", "Reviews"].map(l => (
-              <li key={l}><a href={`#${l.toLowerCase().replace(/ /g,"-")}`} style={G.navLink}>{l}</a></li>
+              <li key={l}>
+                <a href={`#${l.toLowerCase().replace(/ /g, "-")}`} style={G.navLink}>{l}</a>
+              </li>
             ))}
           </ul>
           <a href="/register" style={G.navCta}>Order Now</a>
@@ -306,7 +307,7 @@ export default function PearlHero() {
 
       {/* ── HERO ── */}
       <section style={G.hero} id="hero">
-        {/* Floating pills — exactly like Tokko's "8600 👁", "1520 ❤" etc */}
+        {/* Floating pills */}
         <FloatPill icon="🍽️" count="340 orders" color="#4a6cf7"
           style={{ top: 140, left: "12%", animation: "floatY 5s ease-in-out infinite" }} />
         <FloatPill icon="❤️" count="1,200 students" color="#e8601c"
@@ -331,19 +332,19 @@ export default function PearlHero() {
           </div>
         </div>
 
-        {/* Photo cards strip — exactly like Tokko's overlapping tilted cards */}
+        {/* Photo cards strip */}
         <div style={{ position: "relative", height: 340, maxWidth: 900, margin: "0 auto" }}>
           <div style={{ ...G.photoStrip, position: "absolute", inset: 0 }}>
-            <PhotoCard emoji="🍛" label="Rice & Curry" bg="linear-gradient(160deg,#f4a261,#e76f51)" width={190} height={290} left={30}  rotate={-8} zIndex={1}/>
-            <PhotoCard emoji="🥘" label="Kottu Roti"   bg="linear-gradient(160deg,#2a9d8f,#264653)" width={210} height={310} left={190} rotate={-3} zIndex={2}/>
-            <PhotoCard emoji="🍜" label="Noodles"      bg="linear-gradient(160deg,#e9c46a,#e8601c)" width={230} height={330} left={370} rotate={1}  zIndex={3}/>
-            <PhotoCard emoji="🥗" label="Veggie Bowl"  bg="linear-gradient(160deg,#606c38,#283618)" width={200} height={290} left={570} rotate={5}  zIndex={2}/>
-            <PhotoCard emoji="🧃" label="Fresh Drinks" bg="linear-gradient(160deg,#00b8a9,#007a72)" width={185} height={270} left={740} rotate={9}  zIndex={1}/>
+            <PhotoCard emoji="🍛" label="Rice & Curry" bg="linear-gradient(160deg,#f4a261,#e76f51)" width={190} height={290} left={30}  rotate={-8} zIndex={1} />
+            <PhotoCard emoji="🥘" label="Kottu Roti"   bg="linear-gradient(160deg,#2a9d8f,#264653)" width={210} height={310} left={190} rotate={-3} zIndex={2} />
+            <PhotoCard emoji="🍜" label="Noodles"      bg="linear-gradient(160deg,#e9c46a,#e8601c)" width={230} height={330} left={370} rotate={1}  zIndex={3} />
+            <PhotoCard emoji="🥗" label="Veggie Bowl"  bg="linear-gradient(160deg,#606c38,#283618)" width={200} height={290} left={570} rotate={5}  zIndex={2} />
+            <PhotoCard emoji="🧃" label="Fresh Drinks" bg="linear-gradient(160deg,#00b8a9,#007a72)" width={185} height={270} left={740} rotate={9}  zIndex={1} />
           </div>
         </div>
       </section>
 
-      {/* ── FEATURES TAGS ROW (like "Built to Go Everywhere" section) ── */}
+      {/* ── FEATURES TAGS ROW ── */}
       <section id="features" style={{ background: "#f9f8f6", padding: "80px 48px" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <SectionTitle center>Built for campus life.</SectionTitle>
@@ -353,14 +354,14 @@ export default function PearlHero() {
           gap: 12, justifyContent: "center", maxWidth: 700, margin: "0 auto",
         }}>
           {[
-            ["🗓️","Pre-Order Meals"],["⚡","Real-Time Tracking"],["🏪","Multiple Vendors"],
-            ["🔔","Live Notifications"],["📊","Vendor Dashboard"],["🛡️","Secure Login"],
-            ["🎓","Built for Students"],["📱","Mobile Friendly"],["♻️","Reusable Orders"],
+            ["🗓️", "Pre-Order Meals"], ["⚡", "Real-Time Tracking"], ["🏪", "Multiple Vendors"],
+            ["🔔", "Live Notifications"], ["📊", "Vendor Dashboard"], ["🛡️", "Secure Login"],
+            ["🎓", "Built for Students"], ["📱", "Mobile Friendly"], ["♻️", "Reusable Orders"],
           ].map(([icon, label]) => <FeatureTag key={label} icon={icon} label={label} />)}
         </div>
       </section>
 
-      {/* ── HOW IT WORKS (like "You'll love this course" section) ── */}
+      {/* ── HOW IT WORKS ── */}
       <section id="how-it-works" style={{ background: "#fff", padding: "100px 48px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 52 }}>
@@ -368,23 +369,24 @@ export default function PearlHero() {
             <a href="#roles" style={{ ...G.btnLight, fontSize: 13 }}>For your role →</a>
           </div>
 
-          {/* 3 big feature image cards like "Growth that pops / Posting on lock / Content on repeat" */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
             {[
-              { emoji:"⚡", tag:"No more waiting", title:"Order on lock", desc:"Pre-order before your break ends. Your meal is ready exactly when you arrive.", bg:"linear-gradient(160deg,#1a1a2e,#16213e)", color:"#fff" },
-              { emoji:"📊", tag:"Full visibility", title:"Track live", desc:"Real-time order status updates. Know when your food is being prepared and when to pick up.", bg:"linear-gradient(160deg,#0f3460,#533483)", color:"#fff" },
-              { emoji:"🍽️", tag:"Never stuck again", title:"Browse smarter", desc:"All canteen menus in one place. Filter by category, vendor, or price.", bg:"linear-gradient(160deg,#e94560,#0f3460)", color:"#fff" },
+              { emoji: "⚡", tag: "No more waiting", title: "Order on lock", desc: "Pre-order before your break ends. Your meal is ready exactly when you arrive.", bg: "linear-gradient(160deg,#1a1a2e,#16213e)", color: "#fff" },
+              { emoji: "📊", tag: "Full visibility",  title: "Track live",    desc: "Real-time order status updates. Know when your food is being prepared and when to pick up.", bg: "linear-gradient(160deg,#0f3460,#533483)", color: "#fff" },
+              { emoji: "🍽️", tag: "Never stuck again", title: "Browse smarter", desc: "All canteen menus in one place. Filter by category, vendor, or price.", bg: "linear-gradient(160deg,#e94560,#0f3460)", color: "#fff" },
             ].map(c => (
-              <div key={c.title} style={{
-                borderRadius: 20, overflow: "hidden",
-                background: c.bg, color: c.color,
-                padding: "0 0 0 0", position: "relative",
-                minHeight: 340, display: "flex", flexDirection: "column",
-                justifyContent: "flex-end",
-                transition: "transform 0.3s",
-              }}
-                onMouseEnter={e => e.currentTarget.style.transform="translateY(-4px)"}
-                onMouseLeave={e => e.currentTarget.style.transform="translateY(0)"}
+              <div
+                key={c.title}
+                style={{
+                  borderRadius: 20, overflow: "hidden",
+                  background: c.bg, color: c.color,
+                  position: "relative",
+                  minHeight: 340, display: "flex", flexDirection: "column",
+                  justifyContent: "flex-end",
+                  transition: "transform 0.3s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
+                onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
               >
                 <div style={{ fontSize: 72, textAlign: "center", paddingTop: 40, flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>{c.emoji}</div>
                 <div style={{ padding: "24px 28px" }}>
@@ -398,7 +400,7 @@ export default function PearlHero() {
         </div>
       </section>
 
-      {/* ── "The system that works" — feature pills grid ── */}
+      {/* ── "The system that works" ── */}
       <section style={{ background: "#f9f8f6", padding: "100px 48px", textAlign: "center" }}>
         <SectionTitle center>The system<br />that works.</SectionTitle>
         <p style={{ color: "#777", fontSize: 15, marginTop: 20, marginBottom: 52, lineHeight: 1.7 }}>
@@ -409,18 +411,20 @@ export default function PearlHero() {
           gap: 12, maxWidth: 820, margin: "0 auto",
         }}>
           {[
-            ["🎯","Role-Based"],["🔄","No Guesswork"],["♻️","Reusable Orders"],
-            ["📱","Platform Ready"],["📋","Clear Direction"],["⚡","Easy & Fast"],
-            ["🏆","Repeatable"],["❤️","Student-First"],["💡","Smart Ordering"],
+            ["🎯", "Role-Based"],    ["🔄", "No Guesswork"],   ["♻️", "Reusable Orders"],
+            ["📱", "Platform Ready"],["📋", "Clear Direction"], ["⚡", "Easy & Fast"],
+            ["🏆", "Repeatable"],    ["❤️", "Student-First"],  ["💡", "Smart Ordering"],
           ].map(([icon, label]) => (
-            <div key={label} style={{
-              display: "flex", alignItems: "center", gap: 14,
-              background: "#fff", borderRadius: 999,
-              padding: "14px 20px", boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
-              transition: "transform 0.2s",
-            }}
-              onMouseEnter={e => e.currentTarget.style.transform="scale(1.03)"}
-              onMouseLeave={e => e.currentTarget.style.transform="scale(1)"}
+            <div
+              key={label}
+              style={{
+                display: "flex", alignItems: "center", gap: 14,
+                background: "#fff", borderRadius: 999,
+                padding: "14px 20px", boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
+                transition: "transform 0.2s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
             >
               <div style={{
                 width: 36, height: 36, borderRadius: "50%",
@@ -433,7 +437,7 @@ export default function PearlHero() {
         </div>
       </section>
 
-      {/* ── ROLES (like "What this teaches you") ── */}
+      {/* ── ROLES ── */}
       <section id="for-you" style={{ background: "#fff", padding: "100px 48px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 52 }}>
@@ -442,22 +446,20 @@ export default function PearlHero() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
             <RoleCard emoji="🎓" badge="Student" badgeColor="#4a6cf7" badgeBg="rgba(74,108,247,0.08)"
               title="Order your meal ahead." desc="Stop wasting your break standing in line. Pre-order, track live, and pick up without the wait."
-              features={["Browse all vendor menus","Pre-order before breaks","Live order tracking","Order history","Push notifications"]} />
+              features={["Browse all vendor menus", "Pre-order before breaks", "Live order tracking", "Order history", "Push notifications"]} />
             <RoleCard emoji="🍽️" badge="Vendor" badgeColor="#00b8a9" badgeBg="rgba(0,184,169,0.08)"
               title="Manage your stall smartly." desc="A full dashboard to control your menu, accept orders, and run your canteen business efficiently."
-              features={["Real-time order management","Menu & pricing control","Sales analytics","Mark orders ready","Notification system"]} />
+              features={["Real-time order management", "Menu & pricing control", "Sales analytics", "Mark orders ready", "Notification system"]} />
             <RoleCard emoji="⚙️" badge="Admin" badgeColor="#e8601c" badgeBg="rgba(232,96,28,0.08)"
               title="Oversee the entire system." desc="Full platform control — manage users, vendors, monitor all activity, and keep everything running."
-              features={["User & vendor management","System-wide analytics","Monitor all orders","Approve vendors","Platform config"]} />
+              features={["User & vendor management", "System-wide analytics", "Monitor all orders", "Approve vendors", "Platform config"]} />
           </div>
         </div>
       </section>
 
-      {/* ── REVIEWS — scattered cards exactly like Tokko ── */}
+      {/* ── REVIEWS ── */}
       <section id="reviews" style={{ background: "#f9f8f6", padding: "100px 48px 140px" }}>
         <SectionTitle center>Real stories<br />from campus.</SectionTitle>
-
-        {/* Scattered review cards */}
         <div style={{ position: "relative", height: 460, maxWidth: 940, margin: "60px auto 0" }}>
           <ReviewCard rotate={-6} style={{ left: 0, top: 50 }}
             text="Finally I don't have to rush to the canteen during my 15-minute break. PEARL changed my entire campus routine."
@@ -510,7 +512,7 @@ export default function PearlHero() {
         <div>© 2026 PEARL Smart Canteen · Built for campus life</div>
       </footer>
 
-      {/* Keyframes for floating pills */}
+      {/* Keyframes */}
       <style>{`
         @keyframes floatY {
           0%, 100% { transform: translateY(0px); }
