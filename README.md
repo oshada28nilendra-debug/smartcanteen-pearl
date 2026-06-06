@@ -2,9 +2,6 @@
 
 React + Node.js + MongoDB full-stack web app for Smart Canteen pre-ordering at university.
 
-## 🌐 Live
-- **Web App:** [https://pearll.lk](https://pearll.lk)
-- **API:** [https://smartcanteen-pearl-production.up.railway.app/api/health](https://smartcanteen-pearl-production.up.railway.app/api/health)
 
 ## 🛠️ Tech Stack
 - **Frontend:** React.js, Tailwind CSS, Socket.io Client
