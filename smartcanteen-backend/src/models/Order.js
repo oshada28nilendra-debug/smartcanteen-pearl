@@ -56,6 +56,12 @@ const orderSchema = new mongoose.Schema(
     }],
 
     specialInstructions: { type: String, maxlength: 200, default: null },
+    reservationState: { type: String, enum: ['held','committed','released'], default: 'held' },
+    reservationExpiresAt: Date,
+    stockDate: String,
+    paymentReviewRequired: { type: Boolean, default: false },
+    pickupCode: { type: String, select: false, index: { unique: true, sparse: true } },
+    pickupUsedAt: Date,
     paidAt:      Date,
     completedAt: Date,
     cancelledAt: Date,
@@ -64,7 +70,7 @@ const orderSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform(doc, ret) { delete ret.__v; return ret; },
+      transform(doc, ret) { delete ret.__v; delete ret.pickupCode; return ret; },
     },
   }
 );
@@ -72,15 +78,6 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ vendorId: 1, paymentStatus: 1, status: 1 });
 orderSchema.index({ studentId: 1, createdAt: -1 });
 orderSchema.index({ pickupTime: 1, vendorId: 1 });
-
-orderSchema.methods.markAsPaid = async function (payhereRef) {
-  this.paymentStatus    = PAYMENT_STATUS.PAID;
-  this.status           = ORDER_STATUS.CONFIRMED;
-  this.payhereReference = payhereRef;
-  this.paidAt           = new Date();
-  this.statusHistory.push({ status: ORDER_STATUS.CONFIRMED, note: 'Payment verified' });
-  return this.save();
-};
 
 // Enforce status transition rules
 orderSchema.methods.advanceStatus = async function (newStatus, changedBy) {

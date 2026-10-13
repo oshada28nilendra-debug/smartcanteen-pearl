@@ -14,6 +14,9 @@ const router = express.Router();
 /* ── Student routes ── */
 const studentGuard = [requireAuth, requireRole(ROLES.STUDENT)];
 
+router.post('/pickup/verify', requireAuth, requireRole(ROLES.VENDOR), requireVendorApproved, require('express-rate-limit')({windowMs:60000,limit:20,keyGenerator:req=>String(req.user._id)}), require('../controllers/student.controller').verifyPickup);
+router.post('/:id/reorder', studentGuard, [param('id').isMongoId()], validate, require('../controllers/student.controller').reorder);
+router.get('/:id/pickup-code', studentGuard, [param('id').isMongoId()], validate, require('../controllers/student.controller').pickupCode);
 // GET /api/orders/my
 router.get('/my', studentGuard, getMyOrders);
 

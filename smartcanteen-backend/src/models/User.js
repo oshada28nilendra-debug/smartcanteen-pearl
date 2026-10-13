@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema(
       contactPhone: { type: String, trim: true, default: '' },
       // Image stored as base64 string or https URL
       bannerImage:  { type: String, default: null },
+      openingTime: { type: String, default: '08:00', match: /^([01]\d|2[0-3]):[0-5]\d$/ },
+      closingTime: { type: String, default: '18:00', match: /^([01]\d|2[0-3]):[0-5]\d$/ },
+      openDays: { type: [Number], default: [1,2,3,4,5], validate: v => v.every(n => Number.isInteger(n) && n >= 0 && n <= 6) },
+      ordersPaused: { type: Boolean, default: false },
       paymentDetails: {
         bankName:      { type: String, trim: true, default: '' },
         bankBranch:    { type: String, trim: true, default: '' },
@@ -38,6 +42,8 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+    vendorFavourites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    favourites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem' }],
     studentId:    { type: String, trim: true, sparse: true },
     refreshToken: { type: String, select: false },
 

@@ -1,6 +1,7 @@
 const { MenuItem } = require('../models/MenuItem');
 const { User } = require('../models/User');
 const { sendSuccess, sendCreated, sendNotFound, sendForbidden } = require('../utils/apiResponse');
+const {localDate,vendorAvailability,itemAvailability}=require('../services/availability');
 const logger = require('../utils/logger');
 
 /* ── GET /api/menu/:vendorId  (public) ──
@@ -17,14 +18,16 @@ const getMenuByVendor = async (req, res, next) => {
 
     const [items, vendor] = await Promise.all([
       MenuItem.find(filter).sort({ category: 1, name: 1 }),
-      User.findById(vendorId).select('name vendorProfile vendorStatus'),
+      User.findById(vendorId).select('name vendorProfile.businessName vendorProfile.description vendorProfile.contactPhone vendorProfile.bannerImage vendorProfile.openingTime vendorProfile.closingTime vendorProfile.openDays vendorProfile.ordersPaused vendorStatus accountStatus'),
     ]);
 
     return sendSuccess(res, {
       data: {
-        items,
+        items: items.map(i=>itemAvailability(i.toObject(),vendor)),
         count: items.length,
         vendor: vendor ? {
+          ...vendorAvailability(vendor),
+          vendorProfile: vendor.vendorProfile,
           _id:         vendor._id,
           name:        vendor.name,
           businessName: vendor.vendorProfile?.businessName || vendor.name,
@@ -50,7 +53,7 @@ const getMenuItemById = async (req, res, next) => {
 const createMenuItem = async (req, res, next) => {
   try {
     const { name, description, price, imageUrl, category } = req.body;
-    const item = await MenuItem.create({ vendorId: req.user._id, name, description, price, imageUrl, category });
+    const item = await MenuItem.create({ vendorId: req.user._id, name, description, price, imageUrl, category, dailyStock:req.body.dailyStock || 0,stockDate:localDate(),stockRemaining:req.body.dailyStock || 0 });
     logger.info(`Vendor ${req.user.email} created menu item: ${item.name}`);
     return sendCreated(res, { message: 'Menu item created.', data: { item } });
   } catch (error) { next(error); }
@@ -64,17 +67,23 @@ const updateMenuItem = async (req, res, next) => {
     if (item.vendorId.toString() !== req.user._id.toString())
       return sendForbidden(res, 'You can only edit your own menu items.');
 
-    const { name, description, price, imageUrl, category, isAvailable } = req.body;
-    if (name        !== undefined) item.name        = name;
-    if (description !== undefined) item.description = description;
-    if (price       !== undefined) item.price       = price;
-    if (imageUrl    !== undefined) item.imageUrl    = imageUrl;
-    if (category    !== undefined) item.category    = category;
-    if (isAvailable !== undefined) item.isAvailable = isAvailable;
-    await item.save();
+    const changes={};
+    for(const field of ['name','description','price','imageUrl','category','isAvailable']) if(req.body[field]!==undefined)changes[field]=req.body[field];
+    // Apply document setters/casting and field validation before using an aggregation update.
+    item.set(changes);
+    await item.validate(Object.keys(changes));
+    for(const field of Object.keys(changes))changes[field]=item.get(field);
+    let updated;
+    if(req.body.dailyStock!==undefined) {
+      const total=Number(req.body.dailyStock);
+      if(!Number.isInteger(total)||total<0) return res.status(400).json({success:false,message:'dailyStock must be a nonnegative integer.'});
+      const date=localDate();
+      // Atomic pipeline preserves today's consumed and held units, including concurrent reservations.
+      updated=await MenuItem.findOneAndUpdate({_id:item._id},[{$set:{...Object.fromEntries(Object.entries(changes).map(([key,value])=>[key,{$literal:value}])),dailyStock:total,stockRemaining:{$max:[0,{$subtract:[total,{$cond:[{$eq:['$stockDate',date]},{$ifNull:['$stockAllocated',{$subtract:['$dailyStock','$stockRemaining']}]},0]}]}]},stockAllocated:{$cond:[{$eq:['$stockDate',date]},{$ifNull:['$stockAllocated',{$subtract:['$dailyStock','$stockRemaining']}]},0]},stockDate:date}}],{new:true});
+    } else updated=await MenuItem.findOneAndUpdate({_id:item._id},{$set:changes},{new:true,runValidators:true});
 
     logger.info(`Vendor ${req.user.email} updated item: ${item.name}`);
-    return sendSuccess(res, { message: 'Menu item updated.', data: { item } });
+    return sendSuccess(res, { message: 'Menu item updated.', data: { item:updated } });
   } catch (error) { next(error); }
 };
 

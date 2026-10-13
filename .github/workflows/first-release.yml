@@ -1,0 +1,44 @@
+name: First release checks
+on:
+  push:
+    branches: [feat/pearl-first-release]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: smartcanteen-backend
+    env:
+      MONGOMS_VERSION: 7.0.14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: smartcanteen-backend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+  frontend:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: smartcanteen-frontend/smartcanteen-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: smartcanteen-frontend/smartcanteen-frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm test -- --watchAll=false --runInBand
+        env:
+          CI: true
+      - run: npm run build
+        env:
+          CI: false

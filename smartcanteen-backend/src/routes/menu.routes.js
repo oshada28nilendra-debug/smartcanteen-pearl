@@ -18,6 +18,7 @@ const createItemRules = [
   body('price').isFloat({ min: 0.01 }).withMessage('Price must be > 0.'),
   body('category').notEmpty().isIn(CATEGORIES).withMessage(`Category must be one of: ${CATEGORIES.join(', ')}`),
   // FIX: removed .isURL() — imageUrl can be a base64 data URI from file upload
+  body('dailyStock').optional().isInt({min:0}),
   body('imageUrl').optional(),
 ];
 
@@ -27,6 +28,7 @@ const updateItemRules = [
   body('price').optional().isFloat({ min: 0.01 }),
   body('category').optional().isIn(CATEGORIES),
   // FIX: removed .isURL() here too
+  body('dailyStock').optional().isInt({min:0}),
   body('imageUrl').optional(),
   body('isAvailable').optional().isBoolean(),
 ];

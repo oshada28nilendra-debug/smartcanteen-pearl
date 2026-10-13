@@ -49,7 +49,7 @@ pickupSlotSchema.methods.releaseSpot = async function () {
 };
 
 pickupSlotSchema.statics.getAvailableSlots = function (vendorId, date) {
-  const start = new Date(date); start.setHours(0, 0, 0, 0);
+  const start = new Date(`${date}T00:00:00Z`);
   const end   = new Date(start); end.setDate(end.getDate() + 1);
   return this.find({
     vendorId, isActive: true,
@@ -65,7 +65,7 @@ pickupSlotSchema.statics.seedSlotsForVendor = async function (
   const slots = [];
   const [oH, oM] = openTime.split(':').map(Number);
   const [cH, cM] = closeTime.split(':').map(Number);
-  const slotDate = new Date(date); slotDate.setHours(0, 0, 0, 0);
+  const slotDate = new Date(`${date}T00:00:00Z`);
   let cur = oH * 60 + oM;
   const endMin = cH * 60 + cM;
 
@@ -80,7 +80,8 @@ pickupSlotSchema.statics.seedSlotsForVendor = async function (
     cur += intervalMins;
   }
 
-  return this.insertMany(slots, { ordered: false }).catch(() => slots);
+  await this.bulkWrite(slots.map(slot=>({updateOne:{filter:{vendorId:slot.vendorId,date:slot.date,slotStart:slot.slotStart},update:{$setOnInsert:slot},upsert:true}})));
+  return slots;
 };
 
 const PickupSlot = mongoose.model('PickupSlot', pickupSlotSchema);
