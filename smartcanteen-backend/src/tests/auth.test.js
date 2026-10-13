@@ -2,6 +2,10 @@ require('dotenv').config({ path: '.env.test' });
 
 const request = require('supertest');
 const app     = require('../app');
+const {authLimiter,apiLimiter}=require('../middleware/rateLimiter.middleware');
+
+// Isolate the loopback client between test cases without disabling production limits.
+beforeEach(()=>{for(const ip of ['::ffff:127.0.0.1','127.0.0.1','::1']){authLimiter.resetKey(ip);apiLimiter.resetKey(ip);}});
 const db      = require('./helpers/testDb');
 const {
   createStudent, createPendingVendor, createApprovedVendor,
