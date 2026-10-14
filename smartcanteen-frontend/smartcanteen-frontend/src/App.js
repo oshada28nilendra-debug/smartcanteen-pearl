@@ -17,9 +17,7 @@ import NewCheckout from './pearl/Checkout';
 import {Profile,Notifications} from './pearl/Account';
 import VendorOperations from './pearl/VendorOperations';
 // Vendor
-import VendorDashboard      from './pages/vendor/VendorDashboard';
-import VendorMenuManagement from './pages/vendor/VendorMenuManagement';
-import VendorReports        from './pages/vendor/VendorReports';
+import {VendorDashboard,VendorMenu,VendorReports,VendorProfile} from './pearl/VendorPages';
 
 // Admin
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -91,15 +89,13 @@ function AppRoutes() {
       <Route path="/payment/cancel"  element={<PaymentCancelPage/>}/>
 
       <Route element={<ProtectedRoute allowedRoles={['vendor']}><Shell/></ProtectedRoute>}>
+        <Route path="/vendor/dashboard" element={<VendorDashboard/>}/>
+        <Route path="/vendor/menu" element={<VendorMenu/>}/>
+        <Route path="/vendor/reports" element={<VendorReports/>}/>
         <Route path="/vendor/operations" element={<VendorOperations/>}/>
+        <Route path="/vendor/profile" element={<VendorProfile/>}/>
+        <Route path="/vendor/notifications" element={<Notifications/>}/>
       </Route>
-      {/* Vendor */}
-      <Route path="/vendor/dashboard"
-        element={<ProtectedRoute allowedRoles={['vendor']}><VendorDashboard/></ProtectedRoute>}/>
-      <Route path="/vendor/menu"
-        element={<ProtectedRoute allowedRoles={['vendor']}><VendorMenuManagement/></ProtectedRoute>}/>
-      <Route path="/vendor/reports"
-        element={<ProtectedRoute allowedRoles={['vendor']}><VendorReports/></ProtectedRoute>}/>
 
       {/* Admin */}
       <Route path="/admin/dashboard"
