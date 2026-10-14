@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { randomUUID } = require('crypto');
 
 const JWT_SECRET          = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN      = process.env.JWT_EXPIRES_IN      || '15m';
@@ -18,6 +19,8 @@ const signAccessToken  = (payload) =>
 
 const signRefreshToken = (payload) =>
   jwt.sign(payload, JWT_REFRESH_SECRET, {
+    // Rotation must produce a new token even within the same JWT timestamp second.
+    jwtid: randomUUID(),
     expiresIn: JWT_REFRESH_EXPIRES,
     issuer:   'smartcanteen-api',
     audience: 'smartcanteen-client',
