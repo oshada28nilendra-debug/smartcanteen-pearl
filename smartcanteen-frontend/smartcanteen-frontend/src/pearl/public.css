@@ -4,3 +4,5 @@
 /* Match illustration bounds without rendering screenshot controls as UI. */
 .public-food-art{height:auto;aspect-ratio:580/345;background-size:264.83% auto;background-position:41.84% 10.31%}.campus-art{height:auto;aspect-ratio:536/400;background-size:286.57% auto;background-position:100% 9.62%}.campus-card{background-position:right 65%;background-size:300% auto}.public-pearl h2{font-weight:750}.public-pearl input{font-weight:400}
 .campus-card{background-size:100% 100%,400% auto;background-position:center,right 10%;background-repeat:no-repeat}
+
+.public-pearl h1,.public-pearl h2,.public-pearl h3,.public-pearl label,.public-pearl a,.public-pearl button{font-family:Inter,Arial,sans-serif}.auth-bowl{height:270px;aspect-ratio:356/270;background-image:var(--campus-art);background-size:431.46% auto;background-position:35.08% 18.56%;border-radius:45% 40% 42% 35%;overflow:hidden}

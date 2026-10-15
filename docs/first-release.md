@@ -28,4 +28,4 @@ Admin UI routes and the `/api/admin` router are no longer mounted. Admin self-re
 
 Pull this branch and restart both servers to activate the changes. Existing vendors can keep their accounts. For local verification: save shop details, add a meal with stock, sign in as a student, then place and collect a test order.
 
-Validation: 14 frontend tests and production build pass; browser checks cover public desktop/mobile layouts and dark mode. Local MongoDB integration tests were blocked by this host's `open: Operation not permitted` startup error; CI runs the full backend suite on Ubuntu with MongoDB 7.0.14.
+Validation: 14 frontend tests and production build pass; browser checks cover public desktop/mobile layouts and dark mode. Local MongoDB integration tests were blocked by this host's `open: Operation not permitted` startup error; GitHub CI passed the full 62-test backend suite on Ubuntu with MongoDB 7.0.14.
