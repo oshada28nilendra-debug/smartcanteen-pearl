@@ -19,3 +19,5 @@
 @media(max-width:900px){.auth-bowl,.public-dark .auth-bowl{width:310px;left:-25px}.auth-bowl>span{font-size:15px;right:10px}}
 @media(max-width:600px){.auth-bowl,.public-dark .auth-bowl{width:130px;left:auto;right:-14px;bottom:0;mask-image:none}.auth-bowl>span{display:none}}
 .tracking-art{aspect-ratio:180/240;background-size:853.33% auto;background-position:21.02% 71.43%}.vendor-sample{aspect-ratio:173/100;background-position-y:62.99%}
+@media(max-width:600px){.auth-bowl,.public-dark .auth-bowl{width:88px;right:-10px;bottom:0}}
+@media(max-width:380px){.auth-story h1{font-size:32px}.auth-bowl,.public-dark .auth-bowl{width:75px;right:-10px}}
