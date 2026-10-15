@@ -83,7 +83,7 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword      = async function (candidate) { return bcrypt.compare(candidate, this.password); };
 userSchema.methods.passwordChangedAfter = function (jwtIat) { return this.passwordChangedAt ? jwtIat < Math.floor(this.passwordChangedAt.getTime() / 1000) : false; };
 userSchema.methods.isAccessible         = function () { return this.accountStatus === ACCOUNT_STATUS.ACTIVE; };
-userSchema.methods.isVendorApproved     = function () { return this.role === ROLES.VENDOR && this.vendorStatus === VENDOR_STATUS.APPROVED; };
+userSchema.methods.isVendorApproved     = function () { return this.role === ROLES.VENDOR && this.accountStatus === ACCOUNT_STATUS.ACTIVE; };
 userSchema.methods.toJWTPayload         = function () { return { id: this._id, role: this.role, vendorStatus: this.vendorStatus }; };
 userSchema.statics.findByEmailWithPassword = function (email) {
   return this.findOne({ email: email.toLowerCase() }).select('+password +refreshToken');

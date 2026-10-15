@@ -18,10 +18,10 @@ test('open days use the Colombo weekday across the UTC date boundary', () => {
   expect(vendorAvailability(shop, new Date('2026-10-13T18:29:00Z')).isOpen).toBe(false);
   expect(vendorAvailability(shop, new Date('2026-10-13T18:30:00Z')).isOpen).toBe(true);
 });
-test('pause and vendor approval prevent ordering during opening hours', () => {
+test('pause and inactive accounts prevent ordering; legacy approval status does not', () => {
   const now = new Date('2026-10-13T03:00:00Z');
   expect(vendorAvailability(vendor({ordersPaused:true}), now)).toEqual({isOpen:false,orderingReason:'Ordering paused'});
-  expect(vendorAvailability({...vendor(),vendorStatus:'pending'}, now).isOpen).toBe(false);
+  expect(vendorAvailability({...vendor(),vendorStatus:'pending'}, now).isOpen).toBe(true);
   expect(vendorAvailability({...vendor(),accountStatus:'inactive'}, now).isOpen).toBe(false);
 });
 test('daily stock preview resets at the Colombo date boundary', () => {

@@ -20,8 +20,6 @@ import VendorOperations from './pearl/VendorOperations';
 import {VendorDashboard,VendorMenu,VendorReports,VendorProfile} from './pearl/VendorPages';
 
 // Admin
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminProfile   from './pages/admin/AdminProfile';
 
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -61,7 +59,6 @@ function AppRoutes() {
       <Route path="/" element={
         !user                 ? <LandingPage />                      :
         user.role==='vendor'  ? <Navigate to="/vendor/dashboard"/>   :
-        user.role==='admin'   ? <Navigate to="/admin/dashboard"/>    :
         user.role==='student' ? <Navigate to="/student/home"/>       :
                                 <LandingPage />
       }/>
@@ -96,12 +93,6 @@ function AppRoutes() {
         <Route path="/vendor/profile" element={<VendorProfile/>}/>
         <Route path="/vendor/notifications" element={<Notifications/>}/>
       </Route>
-
-      {/* Admin */}
-      <Route path="/admin/dashboard"
-        element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard/></ProtectedRoute>}/>
-      <Route path="/admin/profile"
-        element={<ProtectedRoute allowedRoles={['admin']}><AdminProfile/></ProtectedRoute>}/>
 
       <Route path="*" element={<Navigate to="/"/>}/>
     </Routes>

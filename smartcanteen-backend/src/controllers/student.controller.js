@@ -6,7 +6,7 @@ const {sendSuccess,sendError,sendNotFound}=require('../utils/apiResponse');
 const {vendorAvailability,itemAvailability}=require('../services/availability');
 const publicFields='name vendorProfile.businessName vendorProfile.description vendorProfile.bannerImage vendorProfile.contactPhone vendorProfile.openingTime vendorProfile.closingTime vendorProfile.openDays vendorProfile.ordersPaused accountStatus vendorStatus';
 const catalog=async(req,res,next)=>{try {
- const vendors=await User.find({role:'vendor',vendorStatus:'approved',accountStatus:'active'}).select(publicFields).lean();
+ const vendors=await User.find({role:'vendor',accountStatus:'active'}).select(publicFields).lean();
  const all=await MenuItem.find({vendorId:{$in:vendors.map(v=>v._id)}}).lean();const q=String(req.query.q||'').trim().toLowerCase();
  const view=vendors.map(v=>({...v,...vendorAvailability(v)}));
  const items=all.map(i=>itemAvailability(i,vendors.find(v=>String(v._id)===String(i.vendorId)))).filter(i=>!q||`${i.name} ${i.description} ${vendors.find(v=>String(v._id)===String(i.vendorId)).vendorProfile.businessName}`.toLowerCase().includes(q));

@@ -68,7 +68,7 @@ const getAvailableSlots = async (req, res, next) => {
 
     const {User}=require('../models/User');
     const {localDate}=require('../services/availability');
-    const vendor=await User.findOne({_id:req.params.vendorId,role:'vendor',vendorStatus:'approved',accountStatus:'active'});
+    const vendor=await User.findOne({_id:req.params.vendorId,role:'vendor',accountStatus:'active'});
     if(!vendor || date!==localDate())return sendSuccess(res,{data:{slots:[]}});
     await require('../services/reservations').expireReservations();
     if(!require('../services/availability').vendorAvailability(vendor).isOpen)return sendSuccess(res,{data:{slots:[]}});

@@ -24,15 +24,12 @@ router.get('/dashboard', (req, res) => {
 });
 
 // GET /api/student/vendors
-// Returns all APPROVED vendors regardless of accountStatus
-// so vendors show up in student dashboard once admin approves them
+// All active shops are discoverable without an approval workflow.
 router.get('/vendors', async (req, res, next) => {
   try {
     const vendors = await User.find({
       role:         ROLES.VENDOR,
-      vendorStatus: 'approved', accountStatus:'active',
-      // FIX: removed accountStatus filter — a vendor might have
-      // default null/undefined accountStatus and still be valid
+      accountStatus:'active',
     })
       .select(require('../controllers/student.controller').publicFields || 'name vendorProfile.businessName vendorProfile.description vendorProfile.bannerImage vendorStatus')
       .sort({ createdAt: -1 });

@@ -1,11 +1,11 @@
 const express = require('express');
-const { requireAuth, requireRole, requireVendorApproved } = require('../middleware/auth.middleware');
+const { requireAuth, requireRole, requireVendorActive } = require('../middleware/auth.middleware');
 const { sendSuccess } = require('../utils/apiResponse');
 const { ROLES, User } = require('../models/User');
 
 const router = express.Router();
 
-router.use(requireAuth, requireRole(ROLES.VENDOR), requireVendorApproved);
+router.use(requireAuth, requireRole(ROLES.VENDOR), requireVendorActive);
 
 // GET /api/vendor/dashboard
 router.get('/dashboard', (req, res) => {

@@ -67,15 +67,15 @@ describe('POST /api/auth/register', () => {
   });
 
   describe('Vendor', () => {
-    test('✅ registers with PENDING status', async () => {
+    test('✅ registers ready to operate', async () => {
       const res = await request(app).post('/api/auth/register').send(buildVendor());
       expect(res.status).toBe(201);
-      expect(res.body.data.user.vendorStatus).toBe(VENDOR_STATUS.PENDING);
+      expect(res.body.data.user.vendorStatus).toBe(VENDOR_STATUS.APPROVED);
     });
 
-    test('✅ message mentions pending approval', async () => {
+    test('✅ message confirms shop is ready', async () => {
       const res = await request(app).post('/api/auth/register').send(buildVendor());
-      expect(res.body.message.toLowerCase()).toMatch(/pending/);
+      expect(res.body.message.toLowerCase()).toMatch(/shop is ready/);
     });
   });
 

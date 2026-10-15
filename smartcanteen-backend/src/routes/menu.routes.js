@@ -4,7 +4,7 @@ const {
   getMenuByVendor, getMenuItemById, createMenuItem,
   updateMenuItem, toggleAvailability, deleteMenuItem,
 } = require('../controllers/menu.controller');
-const { requireAuth, requireRole, requireVendorApproved } = require('../middleware/auth.middleware');
+const { requireAuth, requireRole, requireVendorActive } = require('../middleware/auth.middleware');
 const { validate }   = require('../middleware/validate.middleware');
 const { CATEGORIES } = require('../models/MenuItem');
 const { ROLES }      = require('../models/User');
@@ -45,7 +45,7 @@ router.get('/:vendorId/:itemId',
 );
 
 /* ── Vendor-only routes ── */
-const vendorGuard = [requireAuth, requireRole(ROLES.VENDOR), requireVendorApproved];
+const vendorGuard = [requireAuth, requireRole(ROLES.VENDOR), requireVendorActive];
 
 router.post('/', vendorGuard, createItemRules, validate, createMenuItem);
 
