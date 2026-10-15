@@ -56,16 +56,11 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Landing — public */}
-      <Route path="/" element={
-        !user                 ? <LandingPage />                      :
-        user.role==='vendor'  ? <Navigate to="/vendor/dashboard"/>   :
-        user.role==='student' ? <Navigate to="/student/home"/>       :
-                                <LandingPage />
-      }/>
+      <Route path="/" element={<LandingPage />}/>
 
       {/* Auth */}
-      <Route path="/login"    element={!user ? <Login />    : <Navigate to="/" />} />
-      <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+      <Route path="/login"    element={!user ? <Login />    : <Navigate to={user.role === 'vendor' ? '/vendor/dashboard' : user.role === 'student' ? '/student/home' : '/'} />} />
+      <Route path="/register" element={!user ? <Register /> : <Navigate to={user.role === 'vendor' ? '/vendor/dashboard' : user.role === 'student' ? '/student/home' : '/'} />} />
 
       <Route element={<ProtectedRoute allowedRoles={['student']}><Shell/></ProtectedRoute>}>
         <Route path="/student/home" element={<Catalog/>}/>

@@ -29,3 +29,13 @@ Admin UI routes and the `/api/admin` router are no longer mounted. Admin self-re
 Pull this branch and restart both servers to activate the changes. Existing vendors can keep their accounts. For local verification: save shop details, add a meal with stock, sign in as a student, then place and collect a test order.
 
 Validation: 14 frontend tests and production build pass; browser checks cover public desktop/mobile layouts and dark mode. Local MongoDB integration tests were blocked by this host's `open: Operation not permitted` startup error; GitHub CI passed the full 62-test backend suite on Ubuntu with MongoDB 7.0.14.
+
+## Reference-fidelity correction
+
+The landing page is now public at `/` even for signed-in users; login still directs students and vendors to their own dashboards. Its layout restores the reference's navigation/search, food-and-phone hero, campus illustration, feature strip, Why Choose PEARL section, three vendor cards, campus search panel, lower banner and footer. Vendor cards use `/api/public/vendors`, an allowlisted public projection with no account emails, bank details or tokens. Empty/error states replace invented vendors, ratings and testimonials. The demo button opens a keyboard-dismissable walkthrough.
+
+Account pages now use a compact split layout with reference-inspired food/leaves art, illustrated accents, smaller fields, role selection, social-button styling and responsive dark/light themes. Social providers are disabled and explicitly unavailable until OAuth is configured; email/password works. There is no password-reset service or published legal policy, so misleading links are not added.
+
+`public/images/pearl-auth-food.webp` is a transparent high-resolution illustration generated with the built-in image tool from the supplied account-page reference. Prompt: faithfully restore only the black food bowl, colourful noodles/chicken/vegetables, green leaves, dark-blue leaf and orange/peach shapes; transparent background, no UI, text, frame or logo. Original campus artwork remains user supplied.
+
+Validation: 17 frontend tests pass, production build passes, desktop/mobile light/dark screenshots inspected; vendor cards rendered with clearly separate browser test fixtures. New integration coverage checks that public shop responses exclude private data. Real vendor records require the local backend to be running.

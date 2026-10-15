@@ -162,3 +162,16 @@ describe('Self-service shops',()=>{
   expect(res.status).toBe(403);
  });
 });
+
+ test('public vendor cards exclude private account and banking data',async()=>{
+  const v=await createPendingVendor();
+  v.vendorProfile.paymentDetails={bankName:'Private Bank',accountNumber:'123456'};
+  await v.save();
+  const res=await request(app).get('/api/public/vendors');
+  expect(res.status).toBe(200);
+  expect(res.body.data.vendors).toHaveLength(1);
+  expect(res.body.data.vendors[0]._id).toBe(String(v._id));
+  expect(Object.keys(res.body.data.vendors[0]).sort()).toEqual(['_id','businessName','categories','description','image']);
+  expect(JSON.stringify(res.body)).not.toContain(v.email);
+  expect(JSON.stringify(res.body)).not.toContain('123456');
+ });

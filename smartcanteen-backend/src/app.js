@@ -85,6 +85,7 @@ app.get('/api/health', (req, res) => {
 });
 
 /* ── API Routes ── */
+app.get('/api/public/vendors', require('./controllers/public.controller').vendors);
 app.use('/api/auth',          authRoutes);
 app.use('/api/vendor',        vendorRoutes);
 app.use('/api/student',       studentRoutes);
