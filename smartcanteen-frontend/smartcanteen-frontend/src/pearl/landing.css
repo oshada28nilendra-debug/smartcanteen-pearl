@@ -1,0 +1,53 @@
+/* Public-only reference layout. No dashboard selectors or shared asset overrides. */
+.public-landing-page{--paper:#fffdfb;--muted:#556b89}
+.public-landing-page .public-nav{max-width:1280px;padding:18px 40px;border-bottom:1px solid #f2e7df;gap:30px}
+.public-landing-page .public-nav nav{margin:auto;gap:36px;font-size:13px}
+.public-landing-page .nav-signin{background:none;color:var(--ink);padding:10px}
+.public-landing-page .public-nav-actions{margin:0}.public-landing-page .theme-switch{width:32px}
+.public-landing-page .public-primary,.public-landing-page .public-secondary{min-height:48px;font-size:14px!important;padding:12px 24px}
+.public-landing-page .public-secondary{border-color:#ffdac4}
+.public-landing-page .lp-main{max-width:1280px;margin:auto;padding:0 36px 24px}
+.public-landing-page .lp-hero{display:grid;grid-template-columns:52% 48%;position:relative;align-items:center;min-height:510px}
+.public-landing-page .lp-hero-copy{position:relative;z-index:1;padding:32px 0 32px 14px}
+.public-landing-page .lp-hero h1{font-size:clamp(34px,4.2vw,60px);line-height:1.01;letter-spacing:-2.4px;margin:20px 0 14px}
+.public-landing-page .lp-hero p{font-size:18px;line-height:1.5;max-width:430px}
+.public-landing-page .lp-hero-art{width:112%;margin-left:-12%;aspect-ratio:440/375;background:var(--landing-art) 100% 4.88%/209.32% auto no-repeat;border-radius:42% 10% 10% 30%}
+.public-landing-page .hero-actions{gap:16px;flex-wrap:wrap;margin:22px 0 16px}
+.public-landing-page .lp-campus-note{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+.public-landing-page .lp-campus-note:before{content:'';width:28px;height:2px;background:var(--orange)}
+.public-landing-page .lp-benefits{display:grid;grid-template-columns:repeat(3,1fr);background:#fff5ec;border-radius:26px;padding:30px 34px;gap:32px;margin:0 0 36px}
+.public-landing-page .lp-benefits article{display:flex;align-items:center;gap:24px;border-right:1px solid #e9cdbc;padding-right:20px}
+.public-landing-page .lp-benefits article:last-child{border:0;padding:0}.public-landing-page .lp-benefits svg{color:#ff5016;flex-shrink:0}
+.public-landing-page .lp-benefits h2{font-size:18px;margin:0 0 5px}.public-landing-page .lp-benefits p{margin:0;font-size:14px}
+.public-landing-page .lp-eyebrow{display:block;text-transform:uppercase;letter-spacing:3px;font-size:11px;font-weight:700;color:#ec4a16;margin-bottom:8px}
+.public-landing-page .section-title h2,.public-landing-page .lp-steps h2,.public-landing-page .lp-join h2{font-size:34px;line-height:1.15;letter-spacing:-1px;margin:0 0 6px}
+.public-landing-page .section-title p{font-size:17px;margin:0}.public-landing-page .section-title>a{font-size:14px}
+.public-landing-page .lp-vendor-search{max-width:330px;margin:18px 0}.public-landing-page .lp-vendor-search input{font-size:13px}
+.public-landing-page .public-vendor-grid{gap:22px}.public-landing-page .public-vendor-card{border:0;border-radius:17px;box-shadow:0 6px 22px #0927440b}
+.public-landing-page .public-vendor-card>div:last-child{padding:18px 22px}.public-landing-page .public-vendor-card h3{font-size:18px}.public-landing-page .public-vendor-card h3>span{padding:8px}
+.public-landing-page .public-vendor-card p{font-size:13px}.public-landing-page .public-vendor-card small{font-size:12px}
+.public-landing-page .vendor-sample{aspect-ratio:280/145;background-image:var(--landing-art);background-size:328.93% auto;background-position:6.24% 42.29%}
+.public-landing-page .sample-1{background-size:348.86% auto;aspect-ratio:264/145;background-position:50.84% 42.29%}.public-landing-page .sample-2{background-size:341.11% auto;aspect-ratio:270/145;background-position:94.32% 42.29%}
+.public-landing-page .lp-campus{display:grid;grid-template-columns:48% 52%;background:#08263e;color:white;border-radius:26px;overflow:hidden;margin:36px 0;min-height:340px;position:relative}
+.public-landing-page .lp-campus>div:first-child{padding:36px;position:relative;z-index:1}.public-landing-page .lp-campus h2{font-size:36px;line-height:1.12;letter-spacing:-1px;margin:14px 0}
+.public-landing-page .lp-campus p{color:#e0e9f0;font-size:15px}.public-landing-page .lp-campus .lp-eyebrow{color:white}
+.public-landing-page .lp-campus .public-secondary{background:white;color:#09243e;margin-top:8px}.public-landing-page .lp-campus small{display:block;color:#bfd1de;font-size:10px;margin-top:20px}
+.public-landing-page .lp-campus-art{background:var(--landing-art) 95% 63.33%/200% auto no-repeat;mask-image:linear-gradient(90deg,transparent,#000 20%);margin-left:-15%}
+.public-landing-page .lp-steps{padding:8px 16px 28px}.public-landing-page .lp-steps ol{display:grid;grid-template-columns:repeat(3,1fr);padding:0;margin:26px 0 0;list-style:none;gap:28px}
+.public-landing-page .lp-steps li{display:flex;gap:22px;align-items:center;border-right:1px solid #e7ccbd;padding-right:20px}.public-landing-page .lp-steps li:last-child{border:0}
+.public-landing-page .lp-steps li>span{display:grid;place-items:center;background:#ffecdd;color:#ff4d0c;font-weight:700;font-size:24px;border-radius:50%;width:66px;height:66px;flex-shrink:0}
+.public-landing-page .lp-steps h3{font-size:17px;margin:0 0 6px}.public-landing-page .lp-steps p{font-size:14px;line-height:1.5;margin:0}
+.public-landing-page .lp-join{border-radius:26px;min-height:220px;margin-top:14px;position:relative;overflow:hidden;background:#ffeddf;padding:34px}
+.public-landing-page .lp-join>div:first-child{position:relative;z-index:1;max-width:65%}.public-landing-page .lp-join h2{font-size:30px}.public-landing-page .lp-join p{font-size:17px;margin:6px 0}
+.public-landing-page .lp-join .public-secondary{background:transparent;font-size:12px!important}
+.public-landing-page .lp-join-art{position:absolute;right:0;top:0;width:38%;height:100%;background:var(--landing-art) 98% 90.06%/220% auto no-repeat;mask-image:linear-gradient(90deg,transparent,#000 20%)}
+.public-landing-page .public-footer{padding:30px max(36px,calc((100vw - 1208px)/2));min-height:140px;gap:32px}.public-landing-page .public-footer nav{font-size:12px;gap:24px;flex-wrap:wrap}
+.public-landing-page.public-dark{--paper:#041a2c;--muted:#b6c7da}.public-landing-page.public-dark .lp-benefits,.public-landing-page.public-dark .lp-join{background:#102c41}
+@media(min-width:1500px){.public-landing-page .lp-hero h1{font-size:60px}}
+@media(max-width:1000px){.public-landing-page .public-nav{padding:16px 24px;gap:12px}.public-landing-page .public-nav nav{gap:18px}.public-landing-page .lp-main{padding:0 24px 24px}.public-landing-page .lp-hero{min-height:410px}.public-landing-page .lp-hero-copy{padding-left:0}.public-landing-page .lp-hero h1{letter-spacing:-1.6px}.public-landing-page .lp-hero p{font-size:16px}.public-landing-page .lp-benefits{gap:20px;padding:26px}.public-landing-page .lp-benefits article{gap:14px}.public-landing-page .lp-benefits h2{font-size:15px}.public-landing-page .lp-benefits p{font-size:12px}.public-landing-page .lp-campus h2{font-size:30px}.public-landing-page .lp-join h2{font-size:26px}.public-landing-page .lp-steps li{gap:14px}.public-landing-page .lp-steps li>span{width:48px;height:48px}.public-landing-page .lp-steps h3{font-size:15px}}
+@media(max-width:700px){.public-landing-page .public-nav{padding:14px 20px;flex-wrap:wrap}.public-landing-page .public-nav nav{display:none}.public-landing-page .public-nav-actions{margin-left:auto;gap:4px}.public-landing-page .public-nav-actions .public-primary{min-height:40px;padding:8px 13px;font-size:11px!important}.public-landing-page .theme-switch{display:none}.public-landing-page .lp-main{padding:0 18px 22px}.public-landing-page .lp-hero{display:flex;flex-direction:column;align-items:stretch}.public-landing-page .lp-hero-copy{padding:28px 4px 0}.public-landing-page .lp-hero h1{font-size:clamp(33px,8.9vw,52px);letter-spacing:-1.5px;line-height:1.06}.public-landing-page .lp-hero-art{width:100%;margin:10px 0 0;max-height:400px}.public-landing-page .hero-actions{gap:10px}.public-landing-page .public-primary,.public-landing-page .public-secondary{padding:11px 18px;font-size:12px!important}.public-landing-page .lp-benefits{grid-template-columns:1fr;margin-top:12px;gap:20px;padding:24px}.public-landing-page .lp-benefits article{border:0;padding:0;gap:22px}.public-landing-page .lp-benefits h2{font-size:17px}.public-landing-page .lp-benefits p{font-size:14px}.public-landing-page .section-title{align-items:flex-end}.public-landing-page .section-title h2,.public-landing-page .lp-steps h2{font-size:27px}.public-landing-page .section-title p{font-size:13px}.public-landing-page .section-title>a{font-size:11px}.public-landing-page .lp-eyebrow{font-size:9px;letter-spacing:2px}.public-landing-page .public-vendor-grid{grid-template-columns:1fr;gap:18px}.public-landing-page .public-vendor-card h3{font-size:18px}.public-landing-page .public-vendor-card h3>span{display:flex}.public-landing-page .public-vendor-card p{font-size:13px}.public-landing-page .public-vendor-card small{font-size:12px}.public-landing-page .lp-campus{grid-template-columns:1fr;margin:28px 0}.public-landing-page .lp-campus>div:first-child{padding:28px}.public-landing-page .lp-campus-art{min-height:230px;margin:0;mask-image:linear-gradient(180deg,transparent,#000 20%);background-size:200% auto;background-position:95% 63.33%}.public-landing-page .lp-steps{padding:8px 6px 20px}.public-landing-page .lp-steps ol{grid-template-columns:1fr;gap:24px}.public-landing-page .lp-steps li{border:0;padding:0;gap:20px}.public-landing-page .lp-steps h3{font-size:17px}.public-landing-page .lp-join{padding:26px 24px 200px}.public-landing-page .lp-join>div:first-child{max-width:100%}.public-landing-page .lp-join-art{top:auto;bottom:0;height:190px;width:100%;background-size:220% auto;mask-image:linear-gradient(180deg,transparent,#000 20%)}.public-landing-page .public-footer{padding:28px 22px;flex-direction:column;align-items:flex-start;gap:24px}}
+
+.public-landing-page .public-vendor-card>img,.public-landing-page .vendor-sample{aspect-ratio:1.9}
+/* Keep the decorative CTA crop inside the artwork at every viewport width. */
+.public-landing-page .lp-join-art{top:auto;bottom:0;height:auto;aspect-ratio:400/180;background-size:230.25% auto;background-position:95% 90.05%}
+@media(max-width:380px){.public-landing-page .public-nav{gap:8px;padding:14px}.public-landing-page .public-brand{font-size:17px}.public-landing-page .public-brand img{width:24px}.public-landing-page .public-brand small{font-size:8px}.public-landing-page .public-nav-actions .public-primary{padding:8px 10px}.public-landing-page .nav-signin{padding:8px 4px}.public-landing-page .lp-hero h1{font-size:30px}.public-landing-page .lp-join{padding-bottom:155px}}
