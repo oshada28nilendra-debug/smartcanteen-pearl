@@ -51,3 +51,29 @@
 /* Keep the decorative CTA crop inside the artwork at every viewport width. */
 .public-landing-page .lp-join-art{top:auto;bottom:0;height:auto;aspect-ratio:400/180;background-size:230.25% auto;background-position:95% 90.05%}
 @media(max-width:380px){.public-landing-page .public-nav{gap:8px;padding:14px}.public-landing-page .public-brand{font-size:17px}.public-landing-page .public-brand img{width:24px}.public-landing-page .public-brand small{font-size:8px}.public-landing-page .public-nav-actions .public-primary{padding:8px 10px}.public-landing-page .nav-signin{padding:8px 4px}.public-landing-page .lp-hero h1{font-size:30px}.public-landing-page .lp-join{padding-bottom:155px}}
+
+/* Screenshot review: compact hero, bounded artwork crops, and real vendor counts. */
+.public-landing-page .lp-hero{grid-template-columns:52% 48%;min-height:0;padding:24px 0 14px;gap:0}
+.public-landing-page .lp-hero-copy{padding:18px 14px}
+.public-landing-page .lp-hero h1{font-size:clamp(34px,3.9vw,54px);letter-spacing:-2px}
+.public-landing-page .lp-hero-art{background:none;position:relative;width:100%;margin:0;aspect-ratio:440/375;overflow:hidden;border-radius:42% 10% 10% 30%}
+.public-landing-page .lp-hero-art>svg,.public-landing-page .lp-campus-art>svg,.public-landing-page .lp-join-art>svg{display:block;width:100%;height:100%;position:absolute;inset:0}
+.public-landing-page .lp-pickup-badge{position:absolute;left:47%;top:63%;width:46%;height:20%;background:#fff;color:#08233d;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:10px;padding:10px;box-shadow:0 8px 24px #13273b16}
+.public-landing-page .lp-pickup-badge>span:first-child{display:grid;place-items:center;flex-shrink:0;width:38px;height:38px;border:5px solid #d6f3c9;background:#2cbd23;color:#fff;border-radius:50%}
+.public-landing-page .lp-pickup-badge b{display:block;font-size:clamp(10px,1.2vw,16px);white-space:nowrap;line-height:1.4}.public-landing-page .lp-pickup-badge small{display:block;font-size:clamp(8px,.95vw,12px);color:#61728a;line-height:1.6;white-space:nowrap}
+.public-landing-page .lp-benefits{padding:25px 30px;margin-bottom:30px}
+.public-landing-page .public-vendor-grid[data-count="1"]{grid-template-columns:1fr}
+.public-landing-page .public-vendor-grid[data-count="1"] .public-vendor-card{display:grid;grid-template-columns:42% 58%;align-items:stretch;min-height:230px;background:var(--surface);border:1px solid var(--line)}
+.public-landing-page .public-vendor-grid[data-count="1"] .public-vendor-card>img,.public-landing-page .public-vendor-grid[data-count="1"] .vendor-sample{height:250px;width:100%;object-fit:cover;aspect-ratio:auto}
+.public-landing-page .public-vendor-grid[data-count="1"] .public-vendor-card>div:last-child{display:flex;flex-direction:column;justify-content:center;padding:32px}
+.public-landing-page .public-vendor-grid[data-count="1"] .public-vendor-card h3{font-size:26px;margin-bottom:14px}
+.public-landing-page .public-vendor-grid[data-count="1"] .public-vendor-card p{font-size:16px;margin-bottom:18px}
+.public-landing-page .public-vendor-grid[data-count="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.public-landing-page .lp-campus{min-height:310px;margin:30px 0}.public-landing-page .lp-campus-art{position:relative;background:none;margin-left:-12%;mask-image:linear-gradient(90deg,transparent,#000 25%);min-height:280px;overflow:hidden}
+.public-landing-page .lp-join{min-height:220px}.public-landing-page .lp-join-art{background:none;width:40%;height:100%;aspect-ratio:auto;mask-image:linear-gradient(90deg,transparent,#000 20%);overflow:hidden}
+@media(max-width:1000px){.public-landing-page .lp-hero h1{font-size:clamp(30px,4vw,42px);letter-spacing:-1.3px}.public-landing-page .lp-hero-copy{padding-left:0}.public-landing-page .lp-pickup-badge{gap:5px;padding:6px;border-radius:8px}.public-landing-page .lp-pickup-badge>span:first-child{width:28px;height:28px;border-width:3px}.public-landing-page .lp-pickup-badge svg{width:17px}}
+@media(max-width:700px){.public-landing-page .lp-hero{padding-top:12px}.public-landing-page .lp-hero-copy{padding:16px 4px 0}.public-landing-page .lp-hero h1{font-size:clamp(30px,8.5vw,48px)}.public-landing-page .lp-hero-art{margin:14px 0 0;max-height:none}.public-landing-page .lp-pickup-badge b{font-size:clamp(10px,3vw,15px)}.public-landing-page .lp-pickup-badge small{font-size:clamp(8px,2.3vw,12px)}.public-landing-page .lp-benefits{padding:24px}.public-landing-page .public-vendor-grid[data-count]{grid-template-columns:1fr}.public-landing-page .public-vendor-grid[data-count="1"] .public-vendor-card{display:block;min-height:0}.public-landing-page .public-vendor-grid[data-count="1"] .public-vendor-card>img,.public-landing-page .public-vendor-grid[data-count="1"] .vendor-sample{height:auto;aspect-ratio:1.9}.public-landing-page .public-vendor-grid[data-count="1"] .public-vendor-card>div:last-child{padding:20px}.public-landing-page .public-vendor-grid[data-count="1"] .public-vendor-card h3{font-size:20px;margin-bottom:10px}.public-landing-page .public-vendor-grid[data-count="1"] .public-vendor-card p{font-size:14px;margin-bottom:12px}.public-landing-page .lp-campus-art{margin:0;min-height:0;aspect-ratio:460/285;mask-image:linear-gradient(180deg,transparent,#000 20%)}.public-landing-page .lp-join{padding-bottom:calc((100vw - 36px)*.44 + 16px)}.public-landing-page .lp-join-art{width:100%;height:auto;aspect-ratio:398/175;mask-image:linear-gradient(180deg,transparent,#000 18%)}}
+
+.public-landing-page .vendor-sample{position:relative;overflow:hidden;background:none}.public-landing-page .vendor-sample>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+@media(max-width:900px){.public-landing-page .public-nav-actions{margin-left:auto}}
+@media(min-width:701px) and (max-width:1000px){.public-landing-page .lp-join>div:first-child{max-width:56%}.public-landing-page .lp-join h2{font-size:24px}.public-landing-page .lp-join-art{width:44%}}
