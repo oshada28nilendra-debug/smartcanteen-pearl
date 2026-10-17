@@ -48,7 +48,6 @@ export const AuthProvider = ({ children }) => {
     socketRef.current = socket;
   }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -67,7 +66,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [connectSocket, fetchNotifications]);
 
   const login = async (email, password) => {
     const res = await loginUser({ email, password });
