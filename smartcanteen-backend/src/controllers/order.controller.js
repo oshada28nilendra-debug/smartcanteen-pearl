@@ -10,38 +10,13 @@ const createOrderIntent = async (req, res, next) => {
   try {
     const { vendorId, items, pickupSlotId, specialInstructions } = req.body;
 
-    // 1. Validate and price cart items from DB
-    const cartResult = await MenuItem.validateCartItems(
-      items.map((i) => ({ menuItemId: i.menuItemId, quantity: i.quantity }))
-    );
-    if (!cartResult.valid) return sendError(res, { statusCode: 400, message: cartResult.error });
-
-    // 2. Find and check pickup slot capacity
-    const slot = await PickupSlot.findById(pickupSlotId);
-    if (!slot) return sendNotFound(res, 'Pickup slot not found.');
-    if (!slot.hasCapacity()) {
-      return sendError(res, { statusCode: 409, message: 'This pickup slot is full. Please choose another time.' });
-    }
-
-    // 3. Create order
-    const order = await Order.create({
-      studentId:           req.user._id,
-      vendorId,
-      pickupSlotId:        slot._id,
-      pickupTime:          `${slot.slotStart} – ${slot.slotEnd}`,
-      items:               cartResult.items,
-      totalAmount:         cartResult.total,
-      paymentStatus:       PAYMENT_STATUS.INITIATED,
-      status:              ORDER_STATUS.CONFIRMED,
-      specialInstructions: specialInstructions || null,
-      statusHistory:       [{ status: ORDER_STATUS.CONFIRMED, note: 'Order created, awaiting payment' }],
-    });
-
+    const order = await require('../services/reservations').createIntent(req.user._id, req.body);
     logger.info(`Order intent created: ${order._id} by student ${req.user.email}`);
     return sendCreated(res, {
       message: 'Order created. Proceed to payment.',
       data: {
         orderId:     order._id,
+        expiresAt: order.reservationExpiresAt,
         totalAmount: order.totalAmount,
         pickupTime:  order.pickupTime,
         items:       order.items,
@@ -56,6 +31,7 @@ const createOrderIntent = async (req, res, next) => {
 ── */
 const confirmPayment = async (req, res, next) => {
   try {
+    if (process.env.ENABLE_DEMO_PAYMENTS !== 'true' || process.env.NODE_ENV === 'production') return sendForbidden(res, 'Demo payments are disabled.');
     const order = await Order.findById(req.params.id).populate('vendorId', '_id name vendorProfile');
     if (!order) return sendNotFound(res, 'Order not found.');
 
@@ -65,13 +41,9 @@ const confirmPayment = async (req, res, next) => {
     if (order.paymentStatus === PAYMENT_STATUS.PAID)
       return sendSuccess(res, { message: 'Order already paid.', data: { orderId: order._id } });
 
-    // Mark as paid
-    await order.markAsPaid('CARD-' + Date.now());
-
-    // Reserve the slot
-    const slot = await PickupSlot.findById(order.pickupSlotId);
-    if (slot) await slot.reserveSpot();
-
+    if (process.env.ENABLE_DEMO_PAYMENTS !== 'true' || process.env.NODE_ENV === 'production') return sendForbidden(res, 'Demo payments are disabled.');
+    const settlement = await require('../services/reservations').settlePayment(order._id, 'DEMO-' + order._id);
+    if (!settlement.changed) return sendError(res, {statusCode:409,message:'Reservation expired. Start a new order.'});
     // Notify vendor via Socket.io
     const io = req.app.get('io');
     if (io) {
@@ -82,14 +54,6 @@ const confirmPayment = async (req, res, next) => {
         items:       order.items,
       });
     }
-
-    // Save notification to DB for vendor
-    await Notification.create({
-      userId:  order.vendorId._id,
-      type:    NOTIFICATION_TYPES.ORDER_NEW,
-      message: `New order received for ${order.pickupTime} — LKR ${order.totalAmount}`,
-      meta:    { orderId: order._id },
-    });
 
     logger.info(`Card payment confirmed for order ${order._id}`);
     return sendSuccess(res, { message: 'Payment confirmed.', data: { orderId: order._id } });
@@ -102,11 +66,14 @@ const getAvailableSlots = async (req, res, next) => {
     const { date } = req.query;
     if (!date) return sendError(res, { statusCode: 400, message: 'date query param is required (YYYY-MM-DD).' });
 
-    let slots = await PickupSlot.getAvailableSlots(req.params.vendorId, date);
-    if (slots.length === 0) {
-      await PickupSlot.seedSlotsForVendor(req.params.vendorId, date);
-      slots = await PickupSlot.getAvailableSlots(req.params.vendorId, date);
-    }
+    const {User}=require('../models/User');
+    const {localDate}=require('../services/availability');
+    const vendor=await User.findOne({_id:req.params.vendorId,role:'vendor',accountStatus:'active'});
+    if(!vendor || date!==localDate())return sendSuccess(res,{data:{slots:[]}});
+    await require('../services/reservations').expireReservations();
+    if(!require('../services/availability').vendorAvailability(vendor).isOpen)return sendSuccess(res,{data:{slots:[]}});
+    await PickupSlot.seedSlotsForVendor(req.params.vendorId,date,vendor.vendorProfile.openingTime,vendor.vendorProfile.closingTime);
+    let slots = (await PickupSlot.getAvailableSlots(req.params.vendorId,date)).filter(s=>new Date(`${date}T${s.slotStart}:00+05:30`)>new Date() && s.slotStart>=vendor.vendorProfile.openingTime && s.slotEnd<=vendor.vendorProfile.closingTime);
 
     return sendSuccess(res, { data: { slots } });
   } catch (error) { next(error); }
@@ -138,6 +105,7 @@ const getOrderById = async (req, res, next) => {
     if (!isStudent && !isVendor && !isAdmin)
       return sendForbidden(res, 'You do not have access to this order.');
 
+    if (isVendor && order.paymentStatus !== PAYMENT_STATUS.PAID) return sendForbidden(res, 'Only paid orders can be fulfilled.');
     return sendSuccess(res, { data: { order } });
   } catch (error) { next(error); }
 };
@@ -153,7 +121,7 @@ const getVendorOrders = async (req, res, next) => {
     // Show PAID orders AND INITIATED orders (card payments before confirmation)
     let query = {
       vendorId: req.user._id,
-      paymentStatus: { $in: [PAYMENT_STATUS.PAID, PAYMENT_STATUS.INITIATED] },
+      paymentStatus: PAYMENT_STATUS.PAID,
     };
     if (status) query.status = status;
 
@@ -175,9 +143,10 @@ const updateOrderStatus = async (req, res, next) => {
       return sendForbidden(res, 'You can only update your own orders.');
 
     // FIX: allow status update for both PAID and INITIATED orders
-    if (![PAYMENT_STATUS.PAID, PAYMENT_STATUS.INITIATED].includes(order.paymentStatus))
+    if (order.paymentStatus !== PAYMENT_STATUS.PAID)
       return sendError(res, { statusCode: 400, message: 'Cannot update status of a failed or cancelled order.' });
 
+    if (status === ORDER_STATUS.COMPLETED) return sendError(res, {statusCode:400,message:'Use pickup verification to complete an order.'});
     await order.advanceStatus(status, req.user._id);
 
     const messages = {

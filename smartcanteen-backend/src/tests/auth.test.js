@@ -2,6 +2,10 @@ require('dotenv').config({ path: '.env.test' });
 
 const request = require('supertest');
 const app     = require('../app');
+const {authLimiter,apiLimiter}=require('../middleware/rateLimiter.middleware');
+
+// Isolate the loopback client between test cases without disabling production limits.
+beforeEach(()=>{for(const ip of ['::ffff:127.0.0.1','127.0.0.1','::1']){authLimiter.resetKey(ip);apiLimiter.resetKey(ip);}});
 const db      = require('./helpers/testDb');
 const {
   createStudent, createPendingVendor, createApprovedVendor,
@@ -63,15 +67,15 @@ describe('POST /api/auth/register', () => {
   });
 
   describe('Vendor', () => {
-    test('✅ registers with PENDING status', async () => {
+    test('✅ registers ready to operate', async () => {
       const res = await request(app).post('/api/auth/register').send(buildVendor());
       expect(res.status).toBe(201);
-      expect(res.body.data.user.vendorStatus).toBe(VENDOR_STATUS.PENDING);
+      expect(res.body.data.user.vendorStatus).toBe(VENDOR_STATUS.APPROVED);
     });
 
-    test('✅ message mentions pending approval', async () => {
+    test('✅ message confirms shop is ready', async () => {
       const res = await request(app).post('/api/auth/register').send(buildVendor());
-      expect(res.body.message.toLowerCase()).toMatch(/pending/);
+      expect(res.body.message.toLowerCase()).toMatch(/shop is ready/);
     });
   });
 

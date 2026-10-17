@@ -11,7 +11,7 @@ const statusColors = {
   'Completed':        'bg-gray-100 text-gray-500 border-gray-200',
   'Cancelled':        'bg-red-100 text-red-600 border-red-200',
 };
-const statusNext  = { 'Confirmed':'Preparing', 'Preparing':'Ready for Pickup', 'Ready for Pickup':'Completed' };
+const statusNext  = { 'Confirmed':'Preparing', 'Preparing':'Ready for Pickup' };
 const statusIcons = { 'Confirmed':'📋', 'Preparing':'👨‍🍳', 'Ready for Pickup':'🔔', 'Completed':'✅', 'Cancelled':'❌' };
 
 export default function VendorDashboard() {
@@ -188,7 +188,7 @@ export default function VendorDashboard() {
             <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-lg font-semibold">Vendor</span>
           </div>
           <div className="flex items-center gap-1">
-            {[{label:'Orders',icon:'📋',path:null},{label:'Menu',icon:'🍽️',path:'/vendor/menu'},{label:'Reports',icon:'📊',path:'/vendor/reports'}].map(tab=>(
+            {[{label:'Orders',icon:'📋',path:null},{label:'Menu',icon:'🍽️',path:'/vendor/menu'},{label:'Reports',icon:'📊',path:'/vendor/reports'},{label:'Pickup & hours',icon:'◷',path:'/vendor/operations'}].map(tab=>(
               <button key={tab.label} onClick={()=>tab.path?navigate(tab.path):null}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${!tab.path?'bg-green-500 text-white':'text-gray-600 hover:bg-gray-100'}`}>
                 <span>{tab.icon}</span><span className="hidden md:block">{tab.label}</span>
@@ -324,6 +324,7 @@ export default function VendorDashboard() {
                   </div>
                   {order.specialInstructions&&<div className="mt-2 text-xs text-amber-700 bg-amber-50 rounded-xl p-2.5 border border-amber-100">📝 {order.specialInstructions}</div>}
                 </div>
+                {order.status==='Ready for Pickup'&&<div className="px-4 pb-4"><button onClick={()=>navigate('/vendor/operations')} className="w-full bg-orange-500 text-white rounded-xl py-3">Verify pickup code</button></div>}
                 {statusNext[order.status]&&(
                   <div className="px-4 pb-4">
                     <button onClick={()=>handleUpdateStatus(oid,statusNext[order.status])} disabled={updating===oid}

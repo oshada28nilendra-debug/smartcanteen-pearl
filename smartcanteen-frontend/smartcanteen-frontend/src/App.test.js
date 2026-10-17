@@ -1,8 +1,39 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
-
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+import React from 'react';
+import {render, screen, fireEvent, waitFor} from '@testing-library/react';
+import {TextEncoder, TextDecoder} from 'util';
+Object.assign(global, {TextEncoder, TextDecoder});
+const {MemoryRouter} = require('react-router-dom');
+const Catalog = require('./pearl/Catalog').default;
+const Checkout = require('./pearl/Checkout').default;
+const Orders = require('./pearl/Orders').default;
+const API = require('./services/api').default;
+jest.mock('./services/api', () => ({__esModule:true, default:{get:jest.fn(),post:jest.fn(),put:jest.fn()}}));
+jest.mock('./context/AuthContext', () => ({useAuth:()=>({user:{_id:'student1',name:'Student'},socket:{current:null}})}));
+const response=data=>({data:{data}});
+const meal={_id:'meal1',vendorId:'vendor1',name:'Rice and curry',category:'Meals',price:450,stockRemaining:3,effectiveAvailable:true};
+const cart={vendorId:'vendor1',items:[{...meal,quantity:1}]};
+const mount=(component,path='/student/browse')=>render(<MemoryRouter initialEntries={[path]}>{component}</MemoryRouter>);
+beforeEach(()=>{localStorage.clear();jest.clearAllMocks();API.get.mockImplementation(path=>Promise.resolve(response(path==='/student/catalog'?{vendors:[{_id:'vendor1',name:'Campus kitchen',isOpen:true,vendorProfile:{businessName:'Campus kitchen'}}],items:[meal]}:path==='/student/favourites'?{favourites:[],vendorFavourites:[]}:path==='/payment/config'?{demoEnabled:true}:path.startsWith('/orders/slots/')?{slots:[{_id:'slot1',slotStart:'12:00',slotEnd:'12:15',spotsRemaining:5}]}:{orders:[]})));});
+test('catalog persists a basket and saves favourites through the API contract',async()=>{API.put.mockResolvedValue(response({}));mount(<Catalog/>);fireEvent.click(await screen.findByRole('button',{name:'Add Rice and curry'}));expect(JSON.parse(localStorage.getItem('pearl:cart:student1')).items[0].quantity).toBe(1);fireEvent.click(screen.getByRole('button',{name:'Favourite Rice and curry'}));await waitFor(()=>expect(API.put).toHaveBeenCalledWith('/student/favourites',{favourites:['meal1']}));expect(screen.getByText('Rice and curry added to your order.')).toBeInTheDocument();});
+test('checkout reuses its reservation after a return from payment instead of reserving stock twice',async()=>{localStorage.setItem('pearl:cart:student1',JSON.stringify(cart));API.post.mockImplementation(path=>path==='/orders/intent'?Promise.resolve(response({orderId:'order1',expiresAt:new Date(Date.now()+600000).toISOString()})):Promise.reject(new Error('Provider temporarily unavailable')));const first=mount(<Checkout/>);fireEvent.click(await screen.findByRole('button',{name:/12:00/}));fireEvent.click(screen.getByRole('button',{name:/Continue to PayHere/}));await screen.findByText('Provider temporarily unavailable');first.unmount();API.get.mockImplementation(path=>Promise.resolve(response(path==='/orders/order1'?{order:{paymentStatus:'INITIATED',reservationState:'held'}}:path==='/payment/config'?{demoEnabled:true}:{slots:[{_id:'slot1',slotStart:'12:00',slotEnd:'12:15',spotsRemaining:4}]})));mount(<Checkout/>);await screen.findByText('Order reserved');fireEvent.click(screen.getByRole('button',{name:/Continue to PayHere/}));await screen.findByText('Provider temporarily unavailable');expect(API.post.mock.calls.filter(([path])=>path==='/orders/intent')).toHaveLength(1);});
+test('orders show payment state and recheck repeat order availability',async()=>{API.get.mockResolvedValue(response({orders:[{_id:'order1',status:'Completed',paymentStatus:'PAID',createdAt:new Date().toISOString(),totalAmount:450,pickupTime:'12:00',items:[{nameSnapshot:meal.name}],vendorId:{name:'Campus kitchen'}}]}));API.post.mockResolvedValue(response({vendorId:'vendor1',items:[],unavailable:[{menuItemId:'meal1'}]}));mount(<Orders/>,'/student/orders');fireEvent.click(await screen.findByRole('button',{name:'Order history'}));fireEvent.click(screen.getByRole('button',{name:/Order again/}));expect(await screen.findByRole('dialog')).toHaveTextContent('1 item(s) are unavailable');expect(screen.getByRole('button',{name:'Use this basket'})).toBeDisabled();});
+test('checkout hides demo payments when server disables them',async()=>{localStorage.setItem('pearl:cart:student1',JSON.stringify(cart));API.get.mockImplementation(path=>Promise.resolve(response(path==='/payment/config'?{demoEnabled:false}:{slots:[]})));mount(<Checkout/>);await screen.findByText('No pickup slots available');expect(screen.queryByText(/Demo payment/)).not.toBeInTheDocument();expect(screen.getByRole('button',{name:/Continue to PayHere/})).toBeDisabled();});
+test('pickup QR is requested only for a ready paid order',async()=>{const {Routes,Route}=require('react-router-dom');API.get.mockImplementation(path=>Promise.resolve(response(path.endsWith('/pickup-code')?{code:'a'.repeat(48),orderId:'order1'}:{order:{_id:'order1',status:'Ready for Pickup',paymentStatus:'PAID',items:[{menuItemId:'meal1',quantity:1,nameSnapshot:meal.name,lineTotal:450}],totalAmount:450,createdAt:new Date().toISOString(),pickupTime:'12:00'}})));mount(<Routes><Route path="/student/track/:id" element={<Orders/>}/></Routes>,'/student/track/order1');fireEvent.click(await screen.findByRole('button',{name:'Show pickup code'}));expect(await screen.findByText('a'.repeat(48))).toBeInTheDocument();expect(API.get).toHaveBeenCalledWith('/orders/order1/pickup-code');});
+test('paid basket A is reconciled on entry without discarding a new basket B',async()=>{
+ const nextCart={vendorId:'vendor1',items:[{...meal,_id:'meal2',name:'Noodles',quantity:2}]};
+ localStorage.setItem('pearl:cart:student1',JSON.stringify(nextCart));
+ localStorage.setItem('pearl:reservation:student1',JSON.stringify({orderId:'orderA',pickupSlotId:'slot1',expiresAt:new Date(Date.now()+600000).toISOString(),cart}));
+ const get=API.get.getMockImplementation();
+ API.get.mockImplementation(path=>path==='/orders/orderA'?Promise.resolve(response({order:{paymentStatus:'PAID',reservationState:'committed'}})):get(path));
+ API.post.mockImplementation(path=>path==='/orders/intent'?Promise.resolve(response({orderId:'orderB',expiresAt:new Date(Date.now()+600000).toISOString()})):Promise.reject(new Error('Provider temporarily unavailable')));
+ mount(<Checkout/>);
+ await waitFor(()=>expect(localStorage.getItem('pearl:reservation:student1')).toBeNull());
+ expect(JSON.parse(localStorage.getItem('pearl:cart:student1'))).toEqual(nextCart);
+ expect(screen.getByText('2 × Noodles')).toBeInTheDocument();
+ expect(screen.queryByText('Order reserved')).not.toBeInTheDocument();
+ fireEvent.click(await screen.findByRole('button',{name:/12:00/}));
+ fireEvent.click(screen.getByRole('button',{name:/Continue to PayHere/}));
+ await screen.findByText('Provider temporarily unavailable');
+ expect(API.post).toHaveBeenCalledWith('/orders/intent',{vendorId:'vendor1',pickupSlotId:'slot1',items:[{menuItemId:'meal2',quantity:2}]});
+ expect(JSON.parse(localStorage.getItem('pearl:cart:student1'))).toEqual(nextCart);
 });

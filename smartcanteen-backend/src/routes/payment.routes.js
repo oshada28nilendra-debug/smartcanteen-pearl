@@ -7,6 +7,7 @@ const { ROLES }    = require('../models/User');
 
 const router = express.Router();
 
+router.get('/config', requireAuth, (req,res)=>res.json({success:true,data:{demoEnabled:process.env.ENABLE_DEMO_PAYMENTS==='true' && process.env.NODE_ENV!=='production'}}));
 // POST /api/payment/initiate  (student — start PayHere checkout)
 router.post('/initiate',
   requireAuth, requireRole(ROLES.STUDENT),

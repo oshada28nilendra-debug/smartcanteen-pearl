@@ -4,7 +4,7 @@ const {
   createOrderIntent, confirmPayment, getAvailableSlots,
   getMyOrders, getOrderById, getVendorOrders, updateOrderStatus,
 } = require('../controllers/order.controller');
-const { requireAuth, requireRole, requireVendorApproved } = require('../middleware/auth.middleware');
+const { requireAuth, requireRole, requireVendorActive } = require('../middleware/auth.middleware');
 const { validate }    = require('../middleware/validate.middleware');
 const { ROLES }       = require('../models/User');
 const { ORDER_STATUS } = require('../models/Order');
@@ -14,6 +14,9 @@ const router = express.Router();
 /* ── Student routes ── */
 const studentGuard = [requireAuth, requireRole(ROLES.STUDENT)];
 
+router.post('/pickup/verify', requireAuth, requireRole(ROLES.VENDOR), requireVendorActive, require('express-rate-limit')({windowMs:60000,limit:20,keyGenerator:req=>String(req.user._id)}), require('../controllers/student.controller').verifyPickup);
+router.post('/:id/reorder', studentGuard, [param('id').isMongoId()], validate, require('../controllers/student.controller').reorder);
+router.get('/:id/pickup-code', studentGuard, [param('id').isMongoId()], validate, require('../controllers/student.controller').pickupCode);
 // GET /api/orders/my
 router.get('/my', studentGuard, getMyOrders);
 
@@ -58,7 +61,7 @@ router.get('/:id',
 );
 
 /* ── Vendor routes ── */
-const vendorGuard = [requireAuth, requireRole(ROLES.VENDOR), requireVendorApproved];
+const vendorGuard = [requireAuth, requireRole(ROLES.VENDOR), requireVendorActive];
 
 // GET /api/orders/vendor/all
 router.get('/vendor/all', vendorGuard, getVendorOrders);

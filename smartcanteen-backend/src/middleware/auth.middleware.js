@@ -1,5 +1,5 @@
 const { verifyAccessToken }  = require('../config/jwt');
-const { User, ROLES, VENDOR_STATUS, ACCOUNT_STATUS } = require('../models/User');
+const { User, ROLES, ACCOUNT_STATUS } = require('../models/User');
 const { sendUnauthorized, sendForbidden } = require('../utils/apiResponse');
 const logger = require('../utils/logger');
 
@@ -55,18 +55,13 @@ const requireRole = (...roles) => {
   };
 };
 
-/* ── requireVendorApproved ────────────────── */
-const requireVendorApproved = (req, res, next) => {
+/* ── requireVendorActive ────────────────── */
+const requireVendorActive = (req, res, next) => {
   if (!req.user) return sendUnauthorized(res, 'Authentication required.');
   if (req.user.role !== ROLES.VENDOR) return next();
 
-  if (req.user.vendorStatus === VENDOR_STATUS.APPROVED) return next();
-  if (req.user.vendorStatus === VENDOR_STATUS.PENDING)
-    return sendForbidden(res, 'Your vendor account is pending approval. You will be notified once approved.');
-  if (req.user.vendorStatus === VENDOR_STATUS.REJECTED)
-    return sendForbidden(res, 'Your vendor application has been rejected. Please contact support.');
-
-  return sendForbidden(res, 'Vendor account access denied.');
+  if (!req.user.isAccessible()) return sendForbidden(res, 'Account is not active.');
+  return next();
 };
 
 /* ── requireActive ────────────────────────── */
@@ -76,4 +71,4 @@ const requireActive = (req, res, next) => {
   next();
 };
 
-module.exports = { requireAuth, requireRole, requireVendorApproved, requireActive };
+module.exports = { requireAuth, requireRole, requireVendorActive, requireActive };

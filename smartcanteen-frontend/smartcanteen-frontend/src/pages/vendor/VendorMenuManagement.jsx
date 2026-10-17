@@ -9,7 +9,7 @@ import {
 
 const CATEGORIES = ['Rice','Noodles','Snacks','Beverages','Desserts','Burgers','Sandwiches','Salads','Soups','Specials','Other'];
 const categoryEmojis = { Rice:'🍚',Noodles:'🍜',Snacks:'🍿',Beverages:'🥤',Desserts:'🍰',Burgers:'🍔',Sandwiches:'🥪',Salads:'🥗',Soups:'🍲',Specials:'⭐',Other:'🍽️' };
-const EMPTY_FORM = { name:'', description:'', price:'', category:'Rice', imageUrl:'' };
+const EMPTY_FORM = { name:'', description:'', price:'', dailyStock:0, category:'Rice', imageUrl:'' };
 
 const FoodImage = ({ imageUrl, category, className }) => {
   const [err, setErr] = useState(false);
@@ -155,7 +155,7 @@ export default function VendorMenuManagement() {
   const openAdd = () => { setEditItem(null); setForm(EMPTY_FORM); setImgPreview(''); setImgTab('upload'); setShowModal(true); };
   const openEdit = item => {
     setEditItem(item);
-    setForm({ name:item.name, description:item.description, price:item.price, category:item.category, imageUrl:item.imageUrl||'' });
+    setForm({ name:item.name, description:item.description, price:item.price, dailyStock:item.dailyStock||0, category:item.category, imageUrl:item.imageUrl||'' });
     setImgPreview(item.imageUrl || '');
     setImgTab(item.imageUrl?.startsWith('data:') ? 'upload' : 'url');
     setShowModal(true);
@@ -165,11 +165,13 @@ export default function VendorMenuManagement() {
     if (!form.name.trim())        { showToast('Item name is required.', 'error');    return; }
     if (!form.description.trim()) { showToast('Description is required.', 'error'); return; }
     if (!form.price || parseFloat(form.price) <= 0) { showToast('Price must be > 0.', 'error'); return; }
+    if (!Number.isInteger(Number(form.dailyStock)) || Number(form.dailyStock)<0) { showToast('Portions must be a non-negative whole number.', 'error'); return; }
     setSaving(true);
     const payload = {
       name:        form.name.trim(),
       description: form.description.trim(),
       price:       parseFloat(form.price),
+      dailyStock: Number(form.dailyStock),
       category:    form.category,
       imageUrl:    form.imageUrl.trim() || null,
     };
@@ -333,7 +335,7 @@ export default function VendorMenuManagement() {
                 <h3 className="font-bold text-gray-800 text-sm mb-0.5 truncate">{item.name}</h3>
                 <p className="text-gray-400 text-xs mb-3 line-clamp-1">{item.description}</p>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-green-600 font-black text-lg">LKR {item.price}</span>
+                  <span className="text-green-600 font-black text-lg">LKR {item.price}</span><span className="text-xs text-gray-500">{item.stockRemaining ?? 0} portions left today</span>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={()=>openEdit(item)} className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-xl text-xs font-semibold hover:bg-gray-50 flex items-center justify-center gap-1 transition-all">✏️ Edit</button>
@@ -393,6 +395,11 @@ export default function VendorMenuManagement() {
                 <label className="block text-xs font-semibold text-gray-500 mb-1.5">Description *</label>
                 <textarea value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="Describe the item..." rows={2}
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 resize-none"/>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5" htmlFor="dailyStock">Total portions today *</label>
+                <input id="dailyStock" type="number" min="0" step="1" value={form.dailyStock} onChange={e=>setForm(f=>({...f,dailyStock:e.target.value}))} className="w-full border rounded-xl px-4 py-2.5"/>
+                <p className="text-xs text-gray-500 mt-1">Total made today, including reserved/sold portions. Set fresh stock each day; zero means sold out.</p>
               </div>
               {/* Price + Category */}
               <div className="grid grid-cols-2 gap-3">

@@ -3,3 +3,8 @@ node_modules/
 .env.test
 logs/
 coverage/
+
+# Keep local credentials out of future commits.
+.env
+.env.*
+!.env.example
