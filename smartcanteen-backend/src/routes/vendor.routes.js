@@ -1,11 +1,11 @@
 const express = require('express');
-const { requireAuth, requireRole, requireVendorApproved } = require('../middleware/auth.middleware');
+const { requireAuth, requireRole, requireVendorActive } = require('../middleware/auth.middleware');
 const { sendSuccess } = require('../utils/apiResponse');
 const { ROLES, User } = require('../models/User');
 
 const router = express.Router();
 
-router.use(requireAuth, requireRole(ROLES.VENDOR), requireVendorApproved);
+router.use(requireAuth, requireRole(ROLES.VENDOR), requireVendorActive);
 
 // GET /api/vendor/dashboard
 router.get('/dashboard', (req, res) => {
@@ -54,6 +54,8 @@ router.patch('/profile', async (req, res) => {
     if (contactPhone !== undefined) user.vendorProfile.contactPhone = contactPhone;
     if (bannerImage  !== undefined) user.vendorProfile.bannerImage  = bannerImage;
 
+    for (const field of ['openingTime','closingTime','openDays','ordersPaused']) if (req.body[field] !== undefined) user.vendorProfile[field]=req.body[field];
+    if (user.vendorProfile.openingTime >= user.vendorProfile.closingTime) return res.status(400).json({success:false,message:'Closing time must be after opening time.'});
     // Payment details
     if (!user.vendorProfile.paymentDetails) user.vendorProfile.paymentDetails = {};
     if (bankName      !== undefined) user.vendorProfile.paymentDetails.bankName      = bankName;
@@ -65,7 +67,7 @@ router.patch('/profile', async (req, res) => {
     // Without this, Mongoose won't detect changes to nested objects and won't save them
     user.markModified('vendorProfile');
 
-    await user.save({ validateBeforeSave: false });
+    await user.save();
 
     return sendSuccess(res, {
       message: 'Shop profile updated successfully.',

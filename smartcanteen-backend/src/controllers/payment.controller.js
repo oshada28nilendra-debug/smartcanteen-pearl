@@ -26,6 +26,8 @@ const initiatePayment = async (req, res, next) => {
     if (order.paymentStatus === PAYMENT_STATUS.PAID)
       return sendError(res, { statusCode: 400, message: 'Order is already paid.' });
 
+    if (order.reservationState !== 'held' || order.reservationExpiresAt <= new Date()) return sendError(res,{statusCode:409,message:'Reservation expired.'});
+    if (!process.env.PAYHERE_MERCHANT_ID || !process.env.PAYHERE_MERCHANT_SECRET || !process.env.PAYHERE_NOTIFY_URL) return sendError(res,{statusCode:503,message:'PayHere is not configured.'});
     const merchantId = process.env.PAYHERE_MERCHANT_ID;
     const currency   = 'LKR';
     const hash       = generatePayhereHash(merchantId, order._id.toString(), order.totalAmount, currency);
@@ -38,7 +40,7 @@ const initiatePayment = async (req, res, next) => {
       message: 'Payment initiated.',
       data: {
         payhereParams: {
-          sandbox:      true,
+          sandbox:      process.env.PAYHERE_SANDBOX === 'true',
           merchant_id:  merchantId,
           return_url:   `${process.env.CLIENT_URL}/payment/success`,
           cancel_url:   `${process.env.CLIENT_URL}/payment/cancel`,
@@ -74,72 +76,36 @@ const payhereNotify = async (req, res, next) => {
     } = req.body;
 
     // Verify the signature from PayHere
-    const expectedHash = generatePayhereHash(merchant_id, order_id, payhere_amount, payhere_currency);
-    const localSig     = crypto.createHash('md5')
-      .update(`${merchant_id}${order_id}${payhere_amount}${payhere_currency}${status_code}${expectedHash}`)
-      .digest('hex').toUpperCase();
-
-    if (localSig !== md5sig) {
-      logger.warn(`PayHere signature mismatch for order ${order_id}`);
-      return res.status(400).send('Invalid signature');
-    }
-
-    const order = await Order.findById(order_id).populate('vendorId', '_id');
-    if (!order) { logger.warn(`PayHere notify: order ${order_id} not found`); return res.status(200).send('OK'); }
-
-    // status_code 2 = success in PayHere
-    if (status_code === '2') {
-      await order.markAsPaid(payment_id);
-
-      // Reserve the slot atomically (Rule 2 final enforcement)
-      const slot = await PickupSlot.findById(order.pickupSlotId);
-      if (slot) {
-        const reserved = await slot.reserveSpot();
-        if (!reserved) logger.warn(`Slot full after payment for order ${order._id}`);
+    if (!process.env.PAYHERE_MERCHANT_SECRET || merchant_id !== process.env.PAYHERE_MERCHANT_ID || payhere_currency !== 'LKR' || !/^[a-f0-9]{24}$/i.test(order_id || '') || !/^\d+\.\d{2}$/.test(payhere_amount || '')) return res.status(400).send('Invalid payment');
+    const secretHash = crypto.createHash('md5').update(process.env.PAYHERE_MERCHANT_SECRET).digest('hex').toUpperCase();
+    const localSig = crypto.createHash('md5').update(`${merchant_id}${order_id}${payhere_amount}${payhere_currency}${status_code}${secretHash}`).digest('hex').toUpperCase();
+    if (!/^[a-f0-9]{32}$/i.test(md5sig || '') || !crypto.timingSafeEqual(Buffer.from(localSig), Buffer.from(md5sig.toUpperCase()))) return res.status(400).send('Invalid signature');
+    const order = await Order.findById(order_id);
+    if (!order) return res.status(200).send('OK');
+    if (order.totalAmount.toFixed(2) !== payhere_amount || order.payhereOrderId !== order_id) return res.status(400).send('Payment mismatch');
+    if (status_code === '2' && !payment_id) return res.status(400).send('Missing payment reference');
+    if (status_code === '2' || ['-1','-2','-3'].includes(status_code)) {
+      const {changed} = await require('../services/reservations').settlePayment(order_id, payment_id, status_code === '2');
+      if (changed) {
+        req.app?.get('io')?.to(`vendor:${order.vendorId}`).emit('order:new',{orderId:order._id,pickupTime:order.pickupTime,totalAmount:order.totalAmount,items:order.items});
       }
-
-      // Notify vendor via Socket.io
-      const io = req.app?.get('io');
-      if (io) {
-        io.to(`vendor:${order.vendorId._id}`).emit('order:new', {
-          orderId: order._id, pickupTime: order.pickupTime,
-          totalAmount: order.totalAmount, items: order.items,
-        });
-      }
-
-      // Notify vendor in DB
-      await Notification.create({
-        userId:  order.vendorId._id,
-        type:    NOTIFICATION_TYPES.ORDER_NEW,
-        message: `New order received for ${order.pickupTime}`,
-        meta:    { orderId: order._id },
-      });
-
-      logger.info(`Payment PAID for order ${order._id}`);
-    } else if (status_code === '0') {
-      order.paymentStatus = PAYMENT_STATUS.FAILED;
-      await order.save({ validateBeforeSave: false });
-      logger.info(`Payment FAILED for order ${order._id}`);
-    } else if (status_code === '-1') {
-      order.paymentStatus = PAYMENT_STATUS.CANCELLED;
-      await order.save({ validateBeforeSave: false });
     }
 
     return res.status(200).send('OK');
   } catch (error) {
     logger.error(`PayHere notify error: ${error.message}`);
-    return res.status(200).send('OK'); // always return 200 to PayHere
+    return res.status(500).send('Retry later');
   }
 };
 
 /* ── GET /api/payment/status/:orderId  (student) ── */
 const getPaymentStatus = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.orderId).select('paymentStatus status totalAmount pickupTime');
+    const order = await Order.findById(req.params.orderId).select('studentId paymentStatus status totalAmount pickupTime paymentReviewRequired');
     if (!order) return sendNotFound(res, 'Order not found.');
-    if (order.studentId && order.studentId.toString() !== req.user._id.toString())
+    if (order.studentId.toString() !== req.user._id.toString())
       return sendError(res, { statusCode: 403, message: 'Access denied.' });
-    return sendSuccess(res, { data: { paymentStatus: order.paymentStatus, status: order.status } });
+    return sendSuccess(res, { data: { paymentStatus: order.paymentStatus, status: order.status, paymentReviewRequired: order.paymentReviewRequired } });
   } catch (error) { next(error); }
 };
 

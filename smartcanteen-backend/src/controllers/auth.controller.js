@@ -5,7 +5,7 @@ const {
 const { sendSuccess, sendCreated, sendError, sendUnauthorized, sendForbidden } = require('../utils/apiResponse');
 const logger = require('../utils/logger');
 
-const ADMIN_SECRET = 'PEARL-ADMIN';
+
 
 const issueTokens = async (user) => {
   const accessToken  = signAccessToken(user.toJWTPayload());
@@ -18,10 +18,10 @@ const issueTokens = async (user) => {
 /* ── POST /api/auth/register ── */
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, role, studentId, businessName, description, contactPhone, secretCode } = req.body;
+    const { name, email, password, role, studentId, businessName, description, contactPhone } = req.body;
 
     // Admin registration requires secret code
-    if (role === ROLES.ADMIN && secretCode !== ADMIN_SECRET) {
+    if (role === ROLES.ADMIN) {
       return sendForbidden(res, 'Admin accounts cannot be self-registered.');
     }
 
@@ -31,7 +31,7 @@ const register = async (req, res, next) => {
     const userData = { name, email, password, role: role || ROLES.STUDENT };
     if (userData.role === ROLES.STUDENT && studentId) userData.studentId = studentId;
     if (userData.role === ROLES.VENDOR) {
-      userData.vendorStatus = VENDOR_STATUS.PENDING;
+      userData.vendorStatus = VENDOR_STATUS.APPROVED;
       userData.vendorProfile = { businessName: businessName || name, description: description || '', contactPhone: contactPhone || '' };
     }
 
@@ -39,7 +39,7 @@ const register = async (req, res, next) => {
     logger.info(`New ${user.role} registered: ${user.email}`);
 
     const message = user.role === ROLES.VENDOR
-      ? 'Vendor registered successfully. Your account is pending admin approval.'
+      ? 'Your shop is ready. Sign in to add your menu.'
       : user.role === ROLES.ADMIN
       ? 'Admin account created successfully. You can now log in.'
       : 'Registration successful. You can now log in.';

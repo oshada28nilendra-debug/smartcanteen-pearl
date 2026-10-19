@@ -11,7 +11,6 @@ const logger = require('./utils/logger');
 
 // Routes
 const authRoutes         = require('./routes/auth.routes');
-const adminRoutes        = require('./routes/admin.routes');
 const vendorRoutes       = require('./routes/vendor.routes');
 const studentRoutes      = require('./routes/student.routes');
 const menuRoutes         = require('./routes/menu.routes');
@@ -86,8 +85,8 @@ app.get('/api/health', (req, res) => {
 });
 
 /* ── API Routes ── */
+app.get('/api/public/vendors', require('./controllers/public.controller').vendors);
 app.use('/api/auth',          authRoutes);
-app.use('/api/admin',         adminRoutes);
 app.use('/api/vendor',        vendorRoutes);
 app.use('/api/student',       studentRoutes);
 app.use('/api/menu',          menuRoutes);

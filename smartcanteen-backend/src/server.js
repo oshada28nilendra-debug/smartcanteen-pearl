@@ -22,6 +22,11 @@ const startServer = async () => {
     // 1. Connect to MongoDB
     await connectDB();
 
+    const hello=await require('mongoose').connection.db.admin().command({hello:1});
+    if (!hello.setName && hello.msg !== 'isdbgrid') throw new Error('MongoDB replica set is required for inventory transactions');
+    await require('./services/reservations').expireReservations();
+    const reservationWorker=setInterval(()=>require('./services/reservations').expireReservations().catch(err=>logger.error(err.message)),30000);
+    reservationWorker.unref();
     // 2. Create HTTP server from Express app
     const server = http.createServer(app);
 
